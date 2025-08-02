@@ -3,6 +3,7 @@ import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase
 import { db } from '../../firebase';
 import AddressAutocomplete from '../../components/AddressAutocomplete';
 import LocationRestrictions from '../../components/LocationRestrictions';
+import AddressPreviewMap from '../../components/AddressPreviewMap';
 import { getRestrictedCities, getRestrictedStates } from '../../config/locationConfig';
 import './Clientes.css';
 
@@ -20,6 +21,7 @@ function Clientes() {
     direccionCoords: null,
     fechaRegistro: '',
   });
+  const [showMapPreview, setShowMapPreview] = useState(false);
 
   // Fetch clients from Firebase
   const fetchClientes = async () => {
@@ -105,6 +107,18 @@ function Clientes() {
         lng: parseFloat(addressData.coordinates.lng)
       } : null
     }));
+  };
+
+  // Handle showing map preview
+  const handleShowMapPreview = () => {
+    if (formData.direccionCoords && formData.direccion) {
+      setShowMapPreview(true);
+    }
+  };
+
+  // Handle closing map preview
+  const handleCloseMapPreview = () => {
+    setShowMapPreview(false);
   };
 
   // Handle form submission
@@ -247,6 +261,13 @@ function Clientes() {
                 {formData.direccionCoords && (
                   <div className="coordinates-info">
                     <small>📍 Coordenadas guardadas: {formData.direccionCoords.lat.toFixed(6)}, {formData.direccionCoords.lng.toFixed(6)}</small>
+                    <button 
+                      type="button" 
+                      className="preview-map-btn"
+                      onClick={handleShowMapPreview}
+                    >
+                      🗺️ Ver en Mapa
+                    </button>
                   </div>
                 )}
               </div>
@@ -323,6 +344,15 @@ function Clientes() {
           </div>
         )}
       </div>
+
+      {/* Address Preview Map */}
+      {showMapPreview && (
+        <AddressPreviewMap
+          address={formData.direccion}
+          coordinates={formData.direccionCoords}
+          onClose={handleCloseMapPreview}
+        />
+      )}
     </div>
   );
 }
