@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
+import AddressAutocomplete from '../../components/AddressAutocomplete';
+import LocationRestrictions from '../../components/LocationRestrictions';
+import { getRestrictedCities, getRestrictedStates } from '../../config/locationConfig';
 import './Clientes.css';
 
 function Clientes() {
@@ -12,6 +15,7 @@ function Clientes() {
     nombre: '',
     telefono: '',
     direccion: '',    
+    direccionCoords: null,
     fechaRegistro: '',
   });
 
@@ -49,6 +53,18 @@ function Clientes() {
     }));
   };
 
+  // Handle address autocomplete changes
+  const handleAddressChange = (addressData) => {
+    setFormData(prev => ({
+      ...prev,
+      direccion: addressData.address,
+      direccionCoords: addressData.coordinates ? {
+        lat: parseFloat(addressData.coordinates.lat),
+        lng: parseFloat(addressData.coordinates.lng)
+      } : null
+    }));
+  };
+
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -58,6 +74,13 @@ function Clientes() {
         ...formData,
         fechaRegistro: formData.fechaRegistro || new Date().toISOString().split('T')[0]
       };
+
+
+      
+      // Remove direccionCoords from the main data if it's null
+      if (!clienteData.direccionCoords) {
+        delete clienteData.direccionCoords;
+      }
 
       if (editingCliente) {
         // Update existing client
@@ -73,6 +96,7 @@ function Clientes() {
         nombre: '',        
         telefono: '',
         direccion: '',        
+        direccionCoords: null,
       });
       setShowForm(false);
       fetchClientes();
@@ -88,6 +112,10 @@ function Clientes() {
       nombre: cliente.nombre || '',
       telefono: cliente.telefono || '',
       direccion: cliente.direccion || '',      
+      direccionCoords: cliente.direccionCoords ? {
+        lat: parseFloat(cliente.direccionCoords.lat),
+        lng: parseFloat(cliente.direccionCoords.lng)
+      } : null,
     });
     setShowForm(true);
   };
@@ -112,6 +140,7 @@ function Clientes() {
       nombre: '',
       telefono: '',
       direccion: '',      
+      direccionCoords: null,
     });
   };
 
@@ -165,13 +194,19 @@ function Clientes() {
               
               <div className="form-group">
                 <label htmlFor="direccion">Dirección</label>
-                <textarea
-                  id="direccion"
-                  name="direccion"
+                <LocationRestrictions showDetails={true} />
+                <AddressAutocomplete
                   value={formData.direccion}
-                  onChange={handleInputChange}
-                  rows="3"
+                  onChange={handleAddressChange}
+                  placeholder="Ingresa la dirección del cliente..."
+                  restrictedCities={getRestrictedCities()}
+                  restrictedStates={getRestrictedStates()}
                 />
+                {formData.direccionCoords && (
+                  <div className="coordinates-info">
+                    <small>📍 Coordenadas guardadas: {formData.direccionCoords.lat.toFixed(6)}, {formData.direccionCoords.lng.toFixed(6)}</small>
+                  </div>
+                )}
               </div>
               
               <div className="form-actions">

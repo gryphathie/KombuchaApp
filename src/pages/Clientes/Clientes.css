@@ -146,7 +146,7 @@
 }
 
 .form-container {
-  background: white;
+  background: #343a40;
   padding: 2rem;
   border-radius: 15px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
@@ -157,7 +157,7 @@
 }
 
 .form-container h2 {
-  color: #2d3748;
+  color: white;
   margin-bottom: 1.5rem;
   text-align: center;
 }
@@ -169,7 +169,7 @@
 .form-group label {
   display: block;
   margin-bottom: 0.5rem;
-  color: #4a5568;
+  color: white;
   font-weight: 600;
 }
 
@@ -177,17 +177,32 @@
 .form-group textarea {
   width: 100%;
   padding: 0.75rem;
-  border: 2px solid #e2e8f0;
+  border: 2px solid #667eea;
   border-radius: 8px;
   font-size: 1rem;
   transition: border-color 0.3s ease;
   box-sizing: border-box;
+  background-color: white;
+  color: black;
 }
 
 .form-group input:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #CE4676;
+}
+
+.coordinates-info {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  background-color: rgba(102, 126, 234, 0.1);
+  border-radius: 6px;
+  border-left: 3px solid #667eea;
+}
+
+.coordinates-info small {
+  color: #667eea;
+  font-weight: 500;
 }
 
 .form-actions {
@@ -265,5 +280,9 @@
   
   .form-actions {
     flex-direction: column;
+  }
+  
+  .input{
+    background-color: white;
   }
 } 
