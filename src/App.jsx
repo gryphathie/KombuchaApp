@@ -11,7 +11,7 @@ function App() {
       <BrowserRouter>
         <NavBar />
         <Routes>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/KombuchaApp" element={<Dashboard />} />
           <Route path="/clientes" element={<Clientes />} />
           <Route path="/rutas" element={<div className="container mt-4"><h1>Rutas Page</h1><p>Coming soon...</p></div>} />
           <Route path="/mapa" element={<Map />} />

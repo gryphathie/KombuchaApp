@@ -54,6 +54,30 @@
   padding: 1rem;
   text-align: left;
   font-weight: 600;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.3s ease;
+  position: relative;
+}
+
+.clientes-table th:hover {
+  background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+}
+
+.clientes-table th.sortable {
+  cursor: pointer;
+}
+
+.clientes-table th.sortable:hover {
+  background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+}
+
+.clientes-table th:last-child {
+  cursor: default;
+}
+
+.clientes-table th:last-child:hover {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .clientes-table td {

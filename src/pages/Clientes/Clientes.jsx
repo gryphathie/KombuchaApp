@@ -11,6 +11,8 @@ function Clientes() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingCliente, setEditingCliente] = useState(null);
+  const [sortField, setSortField] = useState('nombre');
+  const [sortDirection, setSortDirection] = useState('asc');
   const [formData, setFormData] = useState({
     nombre: '',
     telefono: '',
@@ -43,6 +45,46 @@ function Clientes() {
   useEffect(() => {
     fetchClientes();
   }, []);
+
+  // Handle sorting
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  // Sort clients based on current sort state
+  const sortedClientes = [...clientes].sort((a, b) => {
+    let aValue = a[sortField] || '';
+    let bValue = b[sortField] || '';
+
+    // Handle date sorting
+    if (sortField === 'fechaRegistro') {
+      aValue = aValue || '1900-01-01';
+      bValue = bValue || '1900-01-01';
+    }
+
+    // Convert to lowercase for string comparison
+    if (typeof aValue === 'string') {
+      aValue = aValue.toLowerCase();
+      bValue = bValue.toLowerCase();
+    }
+
+    if (sortDirection === 'asc') {
+      return aValue > bValue ? 1 : -1;
+    } else {
+      return aValue < bValue ? 1 : -1;
+    }
+  });
+
+  // Get sort indicator
+  const getSortIndicator = (field) => {
+    if (sortField !== field) return '↕️';
+    return sortDirection === 'asc' ? '↑' : '↓';
+  };
 
   // Handle form input changes
   const handleInputChange = (e) => {
@@ -238,15 +280,23 @@ function Clientes() {
             <table className="clientes-table">
               <thead>
                 <tr>
-                  <th>Nombre</th>
-                  <th>Teléfono</th>
-                  <th>Dirección</th>
-                  <th>Fecha de Registro</th>
+                  <th className="sortable" onClick={() => handleSort('nombre')}>
+                    Nombre {getSortIndicator('nombre')}
+                  </th>
+                  <th className="sortable" onClick={() => handleSort('telefono')}>
+                    Teléfono {getSortIndicator('telefono')}
+                  </th>
+                  <th className="sortable" onClick={() => handleSort('direccion')}>
+                    Dirección {getSortIndicator('direccion')}
+                  </th>
+                  <th className="sortable" onClick={() => handleSort('fechaRegistro')}>
+                    Fecha de Registro {getSortIndicator('fechaRegistro')}
+                  </th>
                   <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                {clientes.map((cliente) => (
+                {sortedClientes.map((cliente) => (
                   <tr key={cliente.id}>
                     <td>{cliente.nombre}</td>
                     <td>{cliente.telefono || '-'}</td>

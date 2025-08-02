@@ -58,8 +58,8 @@ const MapView = ({ clientes = [], center = null, zoom = 12 }) => {
             },
             icon: {
               path: window.google.maps.SymbolPath.CIRCLE,
-              scale: 8,
-              fillColor: '#667eea',
+              scale: 10,
+              fillColor: '#F54927',
               fillOpacity: 1,
               strokeColor: '#ffffff',
               strokeWeight: 2
@@ -117,7 +117,7 @@ const MapView = ({ clientes = [], center = null, zoom = 12 }) => {
             const lng = parseFloat(cliente.direccionCoords?.lng);
             return cliente.direccionCoords && !isNaN(lat) && !isNaN(lng) ? (
               <div key={cliente.id} className="legend-item">
-                <div className="legend-marker" style={{ backgroundColor: '#667eea' }}>
+                <div className="legend-marker" style={{ backgroundColor: '#F54927' }}>
                   {index + 1}
                 </div>
                 <span className="legend-text">{cliente.nombre}</span>
