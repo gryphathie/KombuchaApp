@@ -1,0 +1,87 @@
+.location-restrictions {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: linear-gradient(135deg, #f0f4ff 0%, #e6f3ff 100%);
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+.restrictions-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.restrictions-icon {
+  font-size: 1.2rem;
+}
+
+.restrictions-text {
+  color: #4a5568;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.restrictions-details {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.restriction-group {
+  margin-bottom: 0.75rem;
+}
+
+.restriction-group:last-child {
+  margin-bottom: 0;
+}
+
+.restriction-group strong {
+  display: block;
+  color: #2d3748;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.restriction-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.restriction-tag {
+  padding: 0.25rem 0.6rem;
+  border-radius: 15px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: white;
+}
+
+.city-tag {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.state-tag {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .location-restrictions {
+    padding: 0.6rem;
+  }
+  
+  .restrictions-text {
+    font-size: 0.8rem;
+  }
+  
+  .restriction-tags {
+    gap: 0.3rem;
+  }
+  
+  .restriction-tag {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.7rem;
+  }
+} 

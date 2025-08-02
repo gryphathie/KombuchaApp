@@ -1,23 +1,29 @@
-import { initializeApp } from 'firebase/app';
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your Firebase configuration
-// Replace these with your actual Firebase project config
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "your-api-key",
-  authDomain: "your-project.firebaseapp.com",
-  projectId: "your-project-id",
-  storageBucket: "your-project.appspot.com",
-  messagingSenderId: "your-sender-id",
-  appId: "your-app-id"
+  apiKey: "AIzaSyBj3yBju4j5BNyCsngprs1l7XpeuLlzxAU",
+  authDomain: "kombuchaapp.firebaseapp.com",
+  projectId: "kombuchaapp",
+  storageBucket: "kombuchaapp.firebasestorage.app",
+  messagingSenderId: "267416022207",
+  appId: "1:267416022207:web:1407cd0c5f9f6f445e2a0a",
+  measurementId: "G-BG580BH7XJ"
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 
 // Initialize Firebase services
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-export default app; 
+export default app;
