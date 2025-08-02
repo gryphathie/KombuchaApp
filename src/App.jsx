@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom'
 import './App.css'
 import Dashboard from './pages/Dashboard'
 import NavBar from './pages/Navbar'
+import Clientes from './pages/Clientes/Clientes'
 
 function App() {
   return (
@@ -10,7 +11,7 @@ function App() {
         <NavBar />
         <Routes>
           <Route path="/" element={<Dashboard />} />
-          <Route path="/clientes" element={<div className="container mt-4"><h1>Clientes Page</h1><p>Coming soon...</p></div>} />
+          <Route path="/clientes" element={<Clientes />} />
           <Route path="/rutas" element={<div className="container mt-4"><h1>Rutas Page</h1><p>Coming soon...</p></div>} />
         </Routes>
       </BrowserRouter>
