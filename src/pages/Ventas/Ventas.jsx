@@ -1,0 +1,764 @@
+import React, { useState, useEffect } from 'react';
+import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { db } from '../../firebase';
+import { getMexicoDate, getMexicoMonth, getMexicoDateTime, formatDateForDisplay, formatMonthYear } from '../../utils/dateUtils';
+import './Ventas.css';
+
+const Ventas = () => {
+  const [ventas, setVentas] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [editingVenta, setEditingVenta] = useState(null);
+  const [sortField, setSortField] = useState('fecha');
+  const [sortDirection, setSortDirection] = useState('asc');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [kombuchas, setKombuchas] = useState([]);
+  const [clientes, setClientes] = useState([]);
+  const [monthFilter, setMonthFilter] = useState(getMexicoMonth()); // Current month YYYY-MM
+  const [formData, setFormData] = useState({
+    fecha: getMexicoDate(), // Today's date in YYYY-MM-DD format
+    cliente: '',
+    items: [{ kombuchaId: '', cantidad: 1, precio: '' }],
+    total: '0.00',
+    estado: 'pendiente',
+  });
+
+  // Fetch sales from Firebase
+  const fetchVentas = async () => {
+    try {
+        setLoading(true);
+        const querySnapshot = await getDocs(collection(db, 'ventas'));
+        const ventasData = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        setVentas(ventasData);
+    } catch (error) {
+        console.error('Error fetching sales:', error);
+        setError('Error al cargar las ventas');
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  // Fetch kombuchas from Firebase
+  const fetchKombuchas = async () => {
+    try {
+        const querySnapshot = await getDocs(collection(db, 'kombuchas'));
+        const kombuchasData = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        setKombuchas(kombuchasData);
+    } catch (error) {
+        console.error('Error fetching kombuchas:', error);
+    }
+  };
+
+  // Fetch Clientes from Firebase
+  const fetchClientes = async () => {
+    try {
+        const querySnapshot = await getDocs(collection(db, 'clientes'));
+        const clientesData = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        setClientes(clientesData);
+    } catch (error) {
+        console.error('Error fetching clientes:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchVentas();
+    fetchKombuchas();
+    fetchClientes();
+  }, []);
+
+  // Handle sorting
+  const handleSort = (field) => {
+    setSortField(field);
+    setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+  };
+
+  const getSortIndicator = (field) => {
+    if (sortField === field) {
+      return sortDirection === 'asc' ? '▲' : '▼';
+    }
+    return '';
+  };
+
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Handle item changes (kombucha, cantidad, precio)
+  const handleItemChange = (index, field, value) => {
+    setFormData(prev => {
+      const updatedItems = [...prev.items];
+      updatedItems[index] = { ...updatedItems[index], [field]: value };
+      
+      // Auto-fill price when kombucha is selected
+      if (field === 'kombuchaId' && value) {
+        const selectedKombucha = kombuchas.find(k => k.id === value);
+        if (selectedKombucha && selectedKombucha.precio) {
+          updatedItems[index].precio = selectedKombucha.precio;
+        }
+      }
+      
+      // Auto-calculate total
+      const total = updatedItems.reduce((sum, item) => {
+        const cantidad = parseFloat(item.cantidad) || 0;
+        const precio = parseFloat(item.precio) || 0;
+        return sum + (cantidad * precio);
+      }, 0);
+      
+      return {
+        ...prev,
+        items: updatedItems,
+        total: total.toFixed(2)
+      };
+    });
+  };
+
+  // Add new item
+  const addItem = () => {
+    setFormData(prev => ({
+      ...prev,
+      items: [...prev.items, { kombuchaId: '', cantidad: 1, precio: '' }]
+    }));
+  };
+
+  // Remove item
+  const removeItem = (index) => {
+    setFormData(prev => {
+      const updatedItems = prev.items.filter((_, i) => i !== index);
+      if (updatedItems.length === 0) {
+        updatedItems.push({ kombuchaId: '', cantidad: 1, precio: '' });
+      }
+      
+      // Recalculate total
+      const total = updatedItems.reduce((sum, item) => {
+        const cantidad = parseFloat(item.cantidad) || 0;
+        const precio = parseFloat(item.precio) || 0;
+        return sum + (cantidad * precio);
+      }, 0);
+      
+      return {
+        ...prev,
+        items: updatedItems,
+        total: total.toFixed(2)
+      };
+    });
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setError('');
+
+    try {
+        // Validate required fields
+        if (!formData.fecha.trim() || !formData.cliente.trim()) {
+            setError('Fecha y cliente son campos obligatorios');
+            return;
+        }
+
+        // Validate items
+        const validItems = formData.items.filter(item => item.kombuchaId && item.cantidad > 0);
+        if (validItems.length === 0) {
+            setError('Debe agregar al menos un item con kombucha y cantidad');
+            return;
+        }
+
+        const ventaData = {
+            fecha: formData.fecha.trim(),
+            cliente: formData.cliente.trim(),
+            items: validItems,
+            total: parseFloat(formData.total),
+            estado: formData.estado,
+            fechaRegistro: editingVenta ? editingVenta.fechaRegistro : getMexicoDateTime(),
+            fechaActualizacion: getMexicoDateTime()
+        };
+
+        if (editingVenta) {
+            await updateDoc(doc(db, 'ventas', editingVenta.id), ventaData);
+            setVentas(prev => prev.map(v => v.id === editingVenta.id ? { ...v, ...ventaData } : v));
+            setEditingVenta(null);
+        } else {
+            const docRef = await addDoc(collection(db, 'ventas'), ventaData);
+            setVentas(prev => [...prev, { id: docRef.id, ...ventaData }]);
+        }
+
+        setShowForm(false);
+        resetForm();
+    } catch (error) {
+        console.error('Error saving sale:', error);
+        setError('Error al guardar la venta');
+    } finally {
+        setSubmitting(false);
+    }
+  };
+
+  const handleEdit = (venta) => {
+    setEditingVenta(venta);
+    
+    // Convert old format to new format if needed
+    let items = [];
+    if (venta.items && Array.isArray(venta.items)) {
+      items = venta.items;
+    } else if (venta.kombucha) {
+      // Convert old single item format to new format
+      items = [{
+        kombuchaId: venta.kombucha,
+        cantidad: parseFloat(venta.cantidad) || 1,
+        precio: parseFloat(venta.precio) || 0
+      }];
+    }
+    
+    if (items.length === 0) {
+      items = [{ kombuchaId: '', cantidad: 1, precio: 0 }];
+    }
+    
+    const total = items.reduce((sum, item) => {
+      const cantidad = parseFloat(item.cantidad) || 0;
+      const precio = parseFloat(item.precio) || 0;
+      return sum + (cantidad * precio);
+    }, 0);
+    
+    setFormData({
+        fecha: venta.fecha || '',
+        cliente: venta.cliente || '',
+        items: items,
+        total: total.toFixed(2),
+        estado: venta.estado || 'pendiente',
+    });
+    setShowForm(true);
+  };
+
+  const handleDelete = async (ventaId) => {
+    if (!window.confirm('¿Estás seguro de que quieres eliminar esta venta?')) {
+      return;
+    }
+
+    try {
+        await deleteDoc(doc(db, 'ventas', ventaId));
+        setVentas(prev => prev.filter(v => v.id !== ventaId));
+    } catch (error) {
+        console.error('Error deleting sale:', error);
+        setError('Error al eliminar la venta');
+    }
+  };
+
+  const handleCancel = () => {
+    setShowForm(false);
+    setEditingVenta(null);
+    resetForm();
+  };
+
+  const resetForm = () => {
+    setFormData({
+        fecha: getMexicoDate(), // Today's date
+        cliente: '',
+        items: [{ kombuchaId: '', cantidad: 1, precio: '' }],
+        total: '0.00',
+        estado: 'pendiente',
+    });
+  };
+
+  // Helper function to get kombucha name by ID
+  const getKombuchaName = (kombuchaId) => {
+    const kombucha = kombuchas.find(k => k.id === kombuchaId);
+    return kombucha ? kombucha.nombre : 'Kombucha no encontrada';
+  };
+
+  // Helper function to get cliente name by ID
+  const getClienteName = (clienteId) => {
+    const cliente = clientes.find(c => c.id === clienteId);
+    return cliente ? cliente.nombre : 'Cliente no encontrado';
+  };
+
+  // Filter sales by month
+  const filteredVentas = ventas.filter(venta => {
+    if (!monthFilter) return true;
+    const ventaMonth = venta.fecha ? venta.fecha.slice(0, 7) : '';
+    return ventaMonth === monthFilter;
+  });
+
+  // Calculate monthly statistics
+  const getMonthlyStats = () => {
+    const monthlyVentas = filteredVentas;
+    const totalSales = monthlyVentas.length;
+    const totalRevenue = monthlyVentas.reduce((sum, venta) => sum + (parseFloat(venta.total) || 0), 0);
+    const completedSales = monthlyVentas.filter(venta => venta.estado === 'completada').length;
+    const pendingSales = monthlyVentas.filter(venta => venta.estado === 'pendiente').length;
+
+    return {
+      totalSales,
+      totalRevenue,
+      completedSales,
+      pendingSales
+    };
+  };
+
+  const monthlyStats = getMonthlyStats();
+
+  const sortedVentas = [...filteredVentas].sort((a, b) => {
+    const aValue = a[sortField];
+    const bValue = b[sortField];
+    
+    if (sortField === 'precio' || sortField === 'total') {
+      const aNum = parseFloat(aValue) || 0;
+      const bNum = parseFloat(bValue) || 0;
+      return sortDirection === 'asc' ? aNum - bNum : bNum - aNum;
+    }
+    
+    if (aValue && bValue) {
+      return sortDirection === 'asc' 
+        ? aValue.toString().localeCompare(bValue.toString()) 
+        : bValue.toString().localeCompare(aValue.toString());
+    }
+    return 0;
+  });
+
+  if (loading) {
+    return (
+        <div className="ventas-page">
+            <div className="loading">Cargando ventas...</div>
+        </div>
+    );
+  }
+
+  return (
+    <div className="ventas-page">
+        <div className="ventas-header">
+            <h1>Ventas</h1>
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <label style={{ color: '#2d3748', fontWeight: '600', fontSize: '0.9rem' }}>
+                        Filtrar por mes:
+                    </label>
+                    <input
+                        type="month"
+                        value={monthFilter}
+                        onChange={(e) => setMonthFilter(e.target.value)}
+                        style={{
+                            padding: '0.5rem',
+                            border: '2px solid #e2e8f0',
+                            borderRadius: '8px',
+                            fontSize: '0.9rem',
+                            backgroundColor: 'white'
+                        }}
+                    />
+                </div>
+                <button className="add-venta-btn" onClick={() => setShowForm(true)}>+ Nueva Venta</button>
+            </div>
+        </div>
+
+        {error && (
+            <div className="error-message" style={{ 
+                background: '#fed7d7', 
+                color: '#c53030', 
+                padding: '1rem', 
+                borderRadius: '8px', 
+                marginBottom: '1rem' 
+            }}>
+                {error}
+            </div>
+        )}
+
+        <div className="ventas-content">
+            {/* Monthly Statistics */}
+            <div style={{ 
+                padding: '1.5rem', 
+                backgroundColor: '#f7fafc', 
+                borderBottom: '1px solid #e2e8f0',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: '1rem'
+            }}>
+                <div style={{ 
+                    textAlign: 'center', 
+                    padding: '1rem', 
+                    backgroundColor: 'white', 
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                }}>
+                    <h3 style={{ margin: '0 0 0.5rem 0', color: '#4a5568', fontSize: '0.9rem' }}>Total Ventas</h3>
+                    <p style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold', color: '#2d3748' }}>
+                        {monthlyStats.totalSales}
+                    </p>
+                </div>
+                <div style={{ 
+                    textAlign: 'center', 
+                    padding: '1rem', 
+                    backgroundColor: 'white', 
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                }}>
+                    <h3 style={{ margin: '0 0 0.5rem 0', color: '#4a5568', fontSize: '0.9rem' }}>Ingresos Totales</h3>
+                    <p style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold', color: '#38a169' }}>
+                        ${monthlyStats.totalRevenue.toFixed(2)}
+                    </p>
+                </div>
+                <div style={{ 
+                    textAlign: 'center', 
+                    padding: '1rem', 
+                    backgroundColor: 'white', 
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                }}>
+                    <h3 style={{ margin: '0 0 0.5rem 0', color: '#4a5568', fontSize: '0.9rem' }}>Completadas</h3>
+                    <p style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold', color: '#38a169' }}>
+                        {monthlyStats.completedSales}
+                    </p>
+                </div>
+                <div style={{ 
+                    textAlign: 'center', 
+                    padding: '1rem', 
+                    backgroundColor: 'white', 
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                }}>
+                    <h3 style={{ margin: '0 0 0.5rem 0', color: '#4a5568', fontSize: '0.9rem' }}>Pendientes</h3>
+                    <p style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold', color: '#d69e2e' }}>
+                        {monthlyStats.pendingSales}
+                    </p>
+                </div>
+            </div>
+
+            {sortedVentas.length === 0 ? (
+                <div className="empty-state">
+                    <p>No hay ventas registradas para {formatMonthYear(monthFilter)}</p>
+                    <button className="add-venta-btn" onClick={() => setShowForm(true)}>+ Nueva Venta</button>
+                </div>
+            ) : (
+                <div className="ventas-table-container">
+                    <table className="ventas-table">
+                        <thead>
+                            <tr>
+                                <th className="sortable" onClick={() => handleSort('fecha')}>
+                                    Fecha {getSortIndicator('fecha')}
+                                </th>
+                                <th className="sortable" onClick={() => handleSort('cliente')}>
+                                    Cliente {getSortIndicator('cliente')}
+                                </th>
+                                <th>Items</th>
+                                <th className="sortable" onClick={() => handleSort('total')}>
+                                    Total {getSortIndicator('total')}
+                                </th>
+                                <th className="sortable" onClick={() => handleSort('estado')}>
+                                    Estado {getSortIndicator('estado')}
+                                </th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {sortedVentas.map(venta => (
+                                <tr key={venta.id}>
+                                    <td>{venta.fecha}</td>
+                                    <td>{getClienteName(venta.cliente)}</td>
+                                    <td>
+                                        {venta.items && Array.isArray(venta.items) ? (
+                                            <div style={{ maxWidth: '300px' }}>
+                                                {venta.items.map((item, index) => (
+                                                    <div key={index} style={{ 
+                                                        marginBottom: '0.5rem',
+                                                        padding: '0.5rem',
+                                                        backgroundColor: '#f7fafc',
+                                                        borderRadius: '4px',
+                                                        fontSize: '0.85rem'
+                                                    }}>
+                                                        <strong>{getKombuchaName(item.kombuchaId)}</strong>
+                                                        <br />
+                                                        Cantidad: {item.cantidad} × ${item.precio?.toFixed(2) || '0.00'}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            // Fallback for old format
+                                            <div>
+                                                {venta.kombucha && (
+                                                    <div style={{ 
+                                                        padding: '0.5rem',
+                                                        backgroundColor: '#f7fafc',
+                                                        borderRadius: '4px',
+                                                        fontSize: '0.85rem'
+                                                    }}>
+                                                        <strong>{getKombuchaName(venta.kombucha)}</strong>
+                                                        <br />
+                                                        Cantidad: {venta.cantidad} × ${venta.precio?.toFixed(2) || '0.00'}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </td>
+                                    <td className="total-cell">${venta.total?.toFixed(2) || '0.00'}</td>
+                                    <td>
+                                        <span className={`status-badge status-${venta.estado}`}>
+                                            {venta.estado}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div className="actions">
+                                            <button className="edit-btn" onClick={() => handleEdit(venta)}>Editar</button>
+                                            <button className="delete-btn" onClick={() => handleDelete(venta.id)}>Eliminar</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+        </div>
+
+        {/* Form Overlay */}
+        {showForm && (
+            <div className="form-overlay">
+                <div className="form-container">
+                    <h2>{editingVenta ? 'Editar Venta' : 'Nueva Venta'}</h2>
+
+                    {error && (
+                        <div className="error-message" style={{ 
+                            background: '#fed7d7', 
+                            color: '#c53030', 
+                            padding: '0.75rem', 
+                            borderRadius: '8px', 
+                            marginBottom: '1rem' 
+                        }}>
+                            {error}
+                        </div>
+                    )}
+
+                    <form onSubmit={handleSubmit}>
+                        <div className="form-group">
+                            <label htmlFor="fecha">Fecha *</label>
+                            <input
+                                type="date"
+                                id="fecha"
+                                name="fecha"
+                                value={formData.fecha}
+                                onChange={handleInputChange}
+                                required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="cliente">Cliente *</label>
+                            <select
+                                id="cliente"
+                                name="cliente"
+                                value={formData.cliente}
+                                onChange={handleInputChange}
+                                required
+                            >
+                                <option value="">Selecciona un cliente</option>
+                                {clientes.map(cliente => (
+                                    <option key={cliente.id} value={cliente.id}>
+                                        {cliente.nombre}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="form-group">
+                            <label>Productos de la Venta *</label>
+                            <div style={{ marginBottom: '1rem' }}>
+                                <button 
+                                    type="button" 
+                                    onClick={addItem}
+                                    style={{
+                                        background: '#4299e1',
+                                        color: 'white',
+                                        border: 'none',
+                                        padding: '0.5rem 1rem',
+                                        borderRadius: '5px',
+                                        cursor: 'pointer',
+                                        fontSize: '0.9rem'
+                                    }}
+                                >
+                                    + Agregar Producto
+                                </button>
+                            </div>
+                            
+                            {formData.items.map((item, index) => (
+                                <div key={index} style={{ 
+                                    border: '1px solid #667eea', 
+                                    borderRadius: '8px', 
+                                    padding: '1rem', 
+                                    marginBottom: '1rem',
+                                    backgroundColor: 'rgba(102, 126, 234, 0.1)'
+                                }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                        <h4 style={{ color: 'white', margin: 0 }}>Producto {index + 1}</h4>
+                                        {formData.items.length > 1 && (
+                                            <button 
+                                                type="button" 
+                                                onClick={() => removeItem(index)}
+                                                style={{
+                                                    background: '#f56565',
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    padding: '0.25rem 0.5rem',
+                                                    borderRadius: '3px',
+                                                    cursor: 'pointer',
+                                                    fontSize: '0.8rem'
+                                                }}
+                                            >
+                                                Eliminar
+                                            </button>
+                                        )}
+                                    </div>
+                                    
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                                        <div>
+                                            <label style={{ color: 'white', fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>
+                                                Kombucha *
+                                            </label>
+                                            <select
+                                                value={item.kombuchaId}
+                                                onChange={(e) => handleItemChange(index, 'kombuchaId', e.target.value)}
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '0.5rem',
+                                                    border: '2px solid #667eea',
+                                                    borderRadius: '5px',
+                                                    backgroundColor: 'white',
+                                                    color: '#2d3748'
+                                                }}
+                                                required
+                                            >
+                                                <option value="">Selecciona una kombucha</option>
+                                                {kombuchas.map(kombucha => (
+                                                    <option key={kombucha.id} value={kombucha.id}>
+                                                        {kombucha.nombre} - ${kombucha.precio?.toFixed(2) || '0.00'}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        
+                                        <div>
+                                            <label style={{ color: 'white', fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>
+                                                Cantidad *
+                                            </label>
+                                            <input
+                                                type="number"
+                                                value={item.cantidad}
+                                                onChange={(e) => handleItemChange(index, 'cantidad', e.target.value)}
+                                                min="1"
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '0.5rem',
+                                                    border: '2px solid #667eea',
+                                                    borderRadius: '5px',
+                                                    backgroundColor: 'white',
+                                                    color: '#2d3748'
+                                                }}
+                                                required
+                                            />
+                                        </div>
+                                        
+                                        <div>
+                                            <label style={{ color: 'white', fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>
+                                                Precio *
+                                            </label>
+                                            <input
+                                                type="number"
+                                                value={item.precio}
+                                                readOnly
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '0.5rem',
+                                                    border: '2px solid #667eea',
+                                                    borderRadius: '5px',
+                                                    backgroundColor: '#f7fafc',
+                                                    color: '#4a5568',
+                                                    cursor: 'not-allowed'
+                                                }}
+                                            />
+                                            <small style={{ color: 'white', fontSize: '0.7rem' }}>
+                                                Precio automático del producto
+                                            </small>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style={{ 
+                                        marginTop: '0.5rem', 
+                                        padding: '0.5rem', 
+                                        backgroundColor: 'rgba(255, 255, 255, 0.1)', 
+                                        borderRadius: '5px',
+                                        textAlign: 'center'
+                                    }}>
+                                        <strong style={{ color: 'white' }}>
+                                            Subtotal: ${((parseFloat(item.cantidad) || 0) * (parseFloat(item.precio) || 0)).toFixed(2)}
+                                        </strong>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        
+                        <div className="form-group">
+                            <label htmlFor="total">Total *</label>
+                            <input
+                                type="number"
+                                id="total"
+                                name="total"
+                                value={formData.total}
+                                readOnly
+                                style={{ 
+                                    backgroundColor: '#f7fafc', 
+                                    color: '#4a5568',
+                                    cursor: 'not-allowed',
+                                    fontSize: '1.2rem',
+                                    fontWeight: 'bold'
+                                }}
+                            />
+                            <small style={{ color: 'white', fontSize: '0.8rem' }}>
+                                Calculado automáticamente (suma de todos los productos)
+                            </small>
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="estado">Estado *</label>
+                            <select
+                                id="estado"
+                                name="estado"
+                                value={formData.estado}
+                                onChange={handleInputChange}
+                                required
+                            >
+                                <option value="pendiente">Pendiente</option>
+                                <option value="completada">Completada</option>
+                            </select>
+                        </div>
+                        <div className="form-actions">
+                            <button 
+                                type="button" 
+                                className="cancel-btn" 
+                                onClick={handleCancel}
+                                disabled={submitting}
+                            >
+                                Cancelar
+                            </button>
+                            <button 
+                                type="submit" 
+                                className="save-btn"
+                                disabled={submitting}
+                            >
+                                {submitting ? 'Guardando...' : (editingVenta ? 'Actualizar' : 'Guardar')}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        )}
+    </div>
+  );
+};
+
+export default Ventas;

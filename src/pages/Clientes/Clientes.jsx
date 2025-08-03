@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
+import { getMexicoDate } from '../../utils/dateUtils';
 import AddressAutocomplete from '../../components/AddressAutocomplete';
 import LocationRestrictions from '../../components/LocationRestrictions';
 import AddressPreviewMap from '../../components/AddressPreviewMap';
@@ -128,7 +129,7 @@ function Clientes() {
     try {
       const clienteData = {
         ...formData,
-        fechaRegistro: formData.fechaRegistro || new Date().toISOString().split('T')[0]
+        fechaRegistro: formData.fechaRegistro || getMexicoDate()
       };
 
 
