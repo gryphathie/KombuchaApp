@@ -74,7 +74,7 @@
   gap: 10px;
 }
 
-.view-btn {
+.recordatorios-page .view-btn {
   padding: 8px 16px;
   border: 1px solid #ddd;
   background: white;
@@ -85,12 +85,12 @@
   color: rgb(0, 0, 0) !important;
 }
 
-.view-btn:hover {
+.recordatorios-page .view-btn:hover {
   background: #f8f9fa;
   border-color: #007bff;
 }
 
-.view-btn.active {
+.recordatorios-page .view-btn.active {
   background: #007bff;
   color: white;
   border-color: #007bff;
