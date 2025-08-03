@@ -4,9 +4,16 @@
   padding: 2rem;
 }
 
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
 .dashboard h1 {
   color: #2d3748;
-  margin-bottom: 2rem;
+  margin: 0;
   font-size: 2.5rem;
   font-weight: 700;
 }
@@ -61,6 +68,10 @@
   margin: 0;
 }
 
+.notification-stat .stat-subtitle {
+  color: #e53e3e;
+}
+
 /* Charts Section */
 .charts-section {
   margin-bottom: 3rem;
@@ -91,6 +102,121 @@
   font-size: 1rem;
   font-weight: 600;
   text-align: center;
+}
+
+/* Notifications Section */
+.notifications-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  margin-bottom: 3rem;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.section-header h2 {
+  color: #2d3748;
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.view-all-link {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.view-all-link:hover {
+  text-decoration: underline;
+}
+
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.notification-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-radius: 8px;
+  border-left: 4px solid;
+  transition: all 0.2s ease;
+}
+
+.notification-item.overdue {
+  background: #fff5f5;
+  border-left-color: #e53e3e;
+}
+
+.notification-item.upcoming {
+  background: #f0fff4;
+  border-left-color: #38a169;
+}
+
+.notification-item:hover {
+  transform: translateX(5px);
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.customer-name {
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.notification-message {
+  color: #4a5568;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.notification-details {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: #718096;
+}
+
+.notification-actions {
+  margin-left: 1rem;
+}
+
+.action-link {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #667eea;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  background: none;
+  cursor: pointer;
+}
+
+.action-link:hover {
+  background: #667eea;
+  color: white;
 }
 
 .recent-batches {

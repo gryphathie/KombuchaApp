@@ -593,7 +593,8 @@ const Ventas = () => {
                                     borderRadius: '8px', 
                                     padding: '1rem', 
                                     marginBottom: '1rem',
-                                    backgroundColor: 'rgba(102, 126, 234, 0.1)'
+                                    backgroundColor: 'rgb(102, 126, 234)',
+                                    color: 'white'
                                 }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                                         <h4 style={{ color: 'white', margin: 0 }}>Producto {index + 1}</h4>
