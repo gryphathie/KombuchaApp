@@ -224,7 +224,8 @@
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  height: 400px;
+  height: 100%;
+  min-height: 650px;
 }
 
 .map-container .map-view {
@@ -234,6 +235,7 @@
 .map-container .map-container {
   height: 100%;
   min-height: 400px;
+  flex: 1;
 }
 
 .no-coordinates-message {
@@ -410,8 +412,9 @@
 }
 
 .route-map-container {
-  height: 70vh;
+  height: 100%;
   min-height: 500px;
+  flex: 1;
 }
 
 .route-map-container .map-view {
@@ -545,7 +548,7 @@
   gap: 0.5rem;
 }
 
-.view-btn, .edit-btn, .delete-btn {
+.rutas-table .view-btn, .rutas-table .edit-btn, .rutas-table .delete-btn {
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 5px;
@@ -555,32 +558,32 @@
   transition: all 0.3s ease;
 }
 
-.view-btn {
-  background-color: #28a745;
-  color: white;
+.rutas-table .view-btn {
+  background-color: #28a745 !important;
+  color: white !important;
 }
 
-.view-btn:hover {
-  background-color: #218838;
+.rutas-table .view-btn:hover {
+  background-color: #218838 !important;
   transform: translateY(-1px);
 }
 
-.edit-btn {
+.rutas-table .edit-btn {
   background-color: #007bff;
   color: white;
 }
 
-.edit-btn:hover {
+.rutas-table .edit-btn:hover {
   background-color: #0056b3;
   transform: translateY(-1px);
 }
 
-.delete-btn {
+.rutas-table .delete-btn {
   background-color: #dc3545;
   color: white;
 }
 
-.delete-btn:hover {
+.rutas-table .delete-btn:hover {
   background-color: #c82333;
   transform: translateY(-1px);
 }

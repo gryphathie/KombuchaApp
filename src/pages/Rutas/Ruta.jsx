@@ -389,7 +389,7 @@ const Ruta = () => {
               </button>
             </div>
             
-            <div className="modal-content">
+            <div className="map-view">
               {(() => {
                 const routeClients = selectedRouteForMap.clientes.map(clienteId => {
                   const cliente = clientes.find(c => c.id === clienteId);
