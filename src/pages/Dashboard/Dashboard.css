@@ -1,37 +1,26 @@
-.dashboard-page {
+.dashboard {
   min-height: 100vh;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   padding: 2rem;
 }
 
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-
-.dashboard-header h1 {
+.dashboard h1 {
   color: #2d3748;
-  margin: 0;
+  margin-bottom: 2rem;
+  font-size: 2.5rem;
+  font-weight: 700;
 }
 
-.add-batch-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 25px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.3s ease;
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+  font-size: 1.2rem;
+  color: #4a5568;
 }
 
-.add-batch-btn:hover {
-  transform: translateY(-2px);
-}
-
-.stats-section {
+.stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
@@ -44,37 +33,91 @@
   border-radius: 15px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
 }
 
 .stat-card h3 {
   color: #4a5568;
   margin-bottom: 1rem;
   font-size: 1.1rem;
+  font-weight: 600;
 }
 
 .stat-number {
   font-size: 2.5rem;
   font-weight: 700;
   color: #667eea;
+  margin: 0 0 0.5rem 0;
+}
+
+.stat-subtitle {
+  font-size: 1rem;
+  color: #38a169;
+  font-weight: 600;
   margin: 0;
 }
 
-.batches-section {
+/* Charts Section */
+.charts-section {
+  margin-bottom: 3rem;
+}
+
+.chart-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.chart-card {
+  background: white;
+  padding: 1rem;
+  border-radius: 15px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.chart-card:hover {
+  transform: translateY(-2px);
+}
+
+.chart-card h3 {
+  color: #2d3748;
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.recent-batches {
   background: white;
   padding: 2rem;
   border-radius: 15px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
-.batches-section h2 {
+.recent-batches h2 {
   color: #2d3748;
   margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
 }
 
 .batch-list {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: #4a5568;
+  font-style: italic;
 }
 
 .batch-item {
@@ -89,16 +132,19 @@
 
 .batch-item:hover {
   background-color: #f7fafc;
+  border-color: #667eea;
 }
 
 .batch-info h4 {
   color: #2d3748;
   margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
 }
 
 .batch-info p {
   color: #4a5568;
-  margin: 0;
+  margin: 0 0 0.25rem 0;
   font-size: 0.9rem;
 }
 
@@ -107,35 +153,45 @@
   border-radius: 20px;
   font-size: 0.9rem;
   font-weight: 600;
+  min-width: 100px;
+  text-align: center;
 }
 
 .batch-status.active {
-  background-color: #c6f6d5;
-  color: #22543d;
-}
-
-.batch-status.ready {
   background-color: #fef5e7;
   color: #744210;
 }
 
 .batch-status.completed {
-  background-color: #e6fffa;
-  color: #234e52;
+  background-color: #c6f6d5;
+  color: #22543d;
 }
 
 @media (max-width: 768px) {
-  .dashboard-page {
+  .dashboard {
     padding: 1rem;
   }
   
-  .dashboard-header {
-    flex-direction: column;
-    gap: 1rem;
+  .dashboard h1 {
+    font-size: 2rem;
     text-align: center;
   }
   
-  .stats-section {
+  .stats {
     grid-template-columns: 1fr;
+  }
+  
+  .chart-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .batch-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .batch-status {
+    align-self: flex-end;
   }
 } 

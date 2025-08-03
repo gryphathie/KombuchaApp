@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
+import { getMexicoDateTime } from '../../utils/dateUtils';
 import './Kombuchas.css';
 
 const Kombuchas = () => {
@@ -82,8 +83,8 @@ const Kombuchas = () => {
         nombre: formData.nombre.trim(),
         precio: parseFloat(formData.precio) || 0,
         stock: parseInt(formData.stock) || 0,
-        fechaRegistro: editingKombucha ? editingKombucha.fechaRegistro : new Date().toISOString(),
-        fechaActualizacion: new Date().toISOString()
+        fechaRegistro: editingKombucha ? editingKombucha.fechaRegistro : getMexicoDateTime(),
+        fechaActualizacion: getMexicoDateTime()
       };
 
       if (editingKombucha) {
