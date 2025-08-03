@@ -7,6 +7,7 @@ import Map from './pages/Map'
 import Kombuchas from './pages/Kombuchas/Kombuchas'
 import Ventas from './pages/Ventas/Ventas'
 import Ruta from './pages/Rutas'
+import Recordatorios from './pages/Recordatorios'
 
 function App() {
   return (
@@ -20,6 +21,8 @@ function App() {
           <Route path="/ventas" element={<Ventas />} />
           <Route path="/rutas" element={<Ruta />} />
           <Route path="/mapa" element={<Map />} />
+          <Route path="/recordatorios" element={<Recordatorios />} />
+          <Route path="/KombuchaApp/recordatorios" element={<Recordatorios />} />
         </Routes>
       </BrowserRouter>
     </div>

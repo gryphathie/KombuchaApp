@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../firebase';
 import { getMexicoDate, getMexicoMonth, formatDateForDisplay, getRelativeDate, formatRelativeDate } from '../../utils/dateUtils';
+import { generateCustomerNotifications, getNotificationStats, formatNotificationMessage } from '../../utils/notificationUtils';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -16,6 +17,8 @@ import {
   Filler,
 } from 'chart.js';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
+import { useNavigate } from 'react-router-dom';
+import NotificationBell from '../../components/NotificationBell';
 import './Dashboard.css';
 
 // Register Chart.js components
@@ -33,6 +36,7 @@ ChartJS.register(
 );
 
 function Dashboard() {
+  const navigate = useNavigate();
   const [salesStats, setSalesStats] = useState({
     dailySales: 0,
     monthlySales: 0,
@@ -50,6 +54,8 @@ function Dashboard() {
     revenueGrowth: {},
     salesStatus: {}
   });
+  const [notifications, setNotifications] = useState([]);
+  const [notificationStats, setNotificationStats] = useState({});
 
   // Fetch sales data from Firebase
   const fetchSalesData = async () => {
@@ -114,6 +120,15 @@ function Dashboard() {
       // Prepare chart data
       const chartData = prepareChartData(salesData, kombuchasData);
 
+      // Generate notifications
+      const allNotifications = generateCustomerNotifications(salesData, clientesData);
+      const stats = getNotificationStats(allNotifications);
+      
+      // Get top 3 pending notifications for dashboard
+      const topNotifications = allNotifications
+        .filter(n => n.status === 'pending')
+        .slice(0, 3);
+
       setSalesStats({
         dailySales: dailySales.length,
         monthlySales: monthlySales.length,
@@ -123,6 +138,8 @@ function Dashboard() {
       });
       setRecentSales(recentSalesData);
       setChartData(chartData);
+      setNotifications(topNotifications);
+      setNotificationStats(stats);
     } catch (error) {
       console.error('Error fetching sales data:', error);
     } finally {
@@ -255,6 +272,17 @@ function Dashboard() {
     return formatRelativeDate(dateString);
   };
 
+  // Handle notification click
+  const handleNotificationClick = (notification) => {
+    if (notification.type === 'view-all') {
+      // Navigate to notifications page
+      navigate('/recordatorios');
+    } else {
+      // Navigate to notifications page with specific notification
+      navigate('/recordatorios');
+    }
+  };
+
   if (loading) {
     return (
       <div className="dashboard">
@@ -265,7 +293,10 @@ function Dashboard() {
 
   return (
     <div className="dashboard">
-      <h1>Dashboard</h1>
+      <div className="dashboard-header">
+        <h1>Dashboard</h1>
+        <NotificationBell onNotificationClick={handleNotificationClick} />
+      </div>
       <div className="stats">
         <div className="stat-card">
           <h3>Ventas del día</h3>
@@ -281,6 +312,13 @@ function Dashboard() {
           <h3>Kombuchas vendidas</h3>
           <p className="stat-number">{salesStats.monthlyKombuchasSold}</p>
           <p className="stat-subtitle">Este mes</p>
+        </div>
+        <div className="stat-card notification-stat">
+          <h3>Recordatorios</h3>
+          <p className="stat-number">{notificationStats.pending}</p>
+          <p className="stat-subtitle">
+            {notificationStats.overdue > 0 ? `${notificationStats.overdue} vencidos` : 'Al día'}
+          </p>
         </div>
       </div>
 
@@ -429,6 +467,39 @@ function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* Notifications Section */}
+      {notifications.length > 0 && (
+        <div className="notifications-section">
+          <div className="section-header">
+            <h2>Recordatorios Urgentes</h2>
+            <button onClick={() => navigate('/recordatorios')} className="view-all-link">Ver todos</button>
+          </div>
+          <div className="notifications-list">
+            {notifications.map((notification) => (
+              <div 
+                key={notification.notificationId}
+                className={`notification-item ${notification.isDue ? 'overdue' : 'upcoming'}`}
+              >
+                <div className="notification-content">
+                  <div className="customer-name">{notification.customerName}</div>
+                  <div className="notification-message">
+                    {formatNotificationMessage(notification)}
+                  </div>
+                  <div className="notification-details">
+                    <span>Compró {notification.totalKombuchas} kombuchas</span>
+                    <span>•</span>
+                    <span>{formatDateForDisplay(notification.lastSaleDate)}</span>
+                  </div>
+                </div>
+                <div className="notification-actions">
+                  <button onClick={() => navigate('/recordatorios')} className="action-link">Ver detalles</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       
       <div className="recent-batches">
         <h2>Ventas recientes</h2>

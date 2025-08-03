@@ -399,6 +399,40 @@ input[type="month"]:hover {
   color: #d69e2e;
 }
 
+/* View toggle buttons */
+.view-toggle-btn {
+  padding: 0.5rem 1rem;
+  border: 2px solid #667eea;
+  border-radius: 8px;
+  background-color: white;
+  color: #667eea;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.view-toggle-btn:hover {
+  background-color: #667eea;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.view-toggle-btn.active {
+  background-color: #667eea;
+  color: white;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+}
+
+/* Client summary cards hover effect */
+.client-summary-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .ventas-page {
@@ -541,4 +575,12 @@ input[type="month"]:hover {
 
 .status-indicator.completada {
   background-color: #38a169;
+}
+
+/* Responsive design for view toggles */
+@media (max-width: 768px) {
+  .view-toggle-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
 }

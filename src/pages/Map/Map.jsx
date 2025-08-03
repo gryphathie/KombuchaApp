@@ -84,7 +84,9 @@ function Map() {
           </div>
         </div>
       ) : (
-        <MapView clientes={clientes} />
+        <div className="map-content">
+          <MapView clientes={clientes} />
+        </div>
       )}
     </div>
   );

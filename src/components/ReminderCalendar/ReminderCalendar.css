@@ -1,0 +1,305 @@
+.reminder-calendar {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.calendar-nav-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #667eea;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.calendar-nav-btn:hover {
+  background: #667eea;
+  color: white;
+}
+
+.calendar-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  text-transform: capitalize;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: #e9ecef;
+}
+
+.calendar-day-header {
+  background: #f8f9fa;
+  padding: 12px 8px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 12px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.calendar-day {
+  background: white;
+  min-height: 120px;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-day:hover {
+  background: #f8f9fa;
+}
+
+.calendar-day.today {
+  background: #e3f2fd;
+  border: 2px solid #2196f3;
+}
+
+.calendar-day.other-month {
+  background: #fafafa;
+  color: #ccc;
+}
+
+.calendar-day.other-month .day-number {
+  color: #ccc;
+}
+
+.day-number {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+
+
+.reminders-indicator {
+  position: relative;
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.reminder-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.reminder-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+}
+
+.reminder-dot:hover {
+  transform: scale(1.2);
+  z-index: 10;
+}
+
+.customer-name-tooltip {
+  color: #333;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 80px;
+}
+
+.sales-indicator {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sale-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.sale-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+}
+
+.sale-dot:hover {
+  transform: scale(1.2);
+  z-index: 10;
+}
+
+.sale-info-tooltip {
+  color: #333;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 80px;
+}
+
+.more-sales {
+  background: #6c757d;
+  color: white;
+  font-size: 10px;
+  padding: 2px 4px;
+  border-radius: 8px;
+  font-weight: 500;
+  align-self: flex-end;
+}
+
+.more-reminders {
+  background: #6c757d;
+  color: white;
+  font-size: 10px;
+  padding: 2px 4px;
+  border-radius: 8px;
+  font-weight: 500;
+  align-self: flex-end;
+}
+
+.calendar-legend {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #666;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid white;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.legend-dot.high-priority {
+  background-color: #e74c3c;
+}
+
+.legend-dot.medium-priority {
+  background-color: #f39c12;
+}
+
+.legend-dot.low-priority {
+  background-color: #27ae60;
+}
+
+.legend-dot.completed-sale {
+  background-color: #007bff;
+}
+
+.legend-dot.pending-sale {
+  background-color: #6f42c1;
+}
+
+
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .calendar-day {
+    min-height: 60px;
+    padding: 6px;
+  }
+  
+  .day-number {
+    font-size: 12px;
+  }
+  
+  .reminder-dot {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .calendar-legend {
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+  }
+  
+  .legend-item {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar-header {
+    padding: 15px;
+  }
+  
+  .calendar-title {
+    font-size: 16px;
+  }
+  
+  .calendar-nav-btn {
+    font-size: 20px;
+    padding: 6px 8px;
+  }
+  
+  .calendar-day-header {
+    padding: 8px 4px;
+    font-size: 10px;
+  }
+  
+  .calendar-day {
+    min-height: 50px;
+    padding: 4px;
+  }
+  
+  .day-number {
+    font-size: 11px;
+  }
+  
+  .reminder-dot {
+    width: 5px;
+    height: 5px;
+  }
+} 

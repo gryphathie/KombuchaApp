@@ -19,6 +19,7 @@ function NavBar() {
             <Nav.Link as={NavLink} to="/ventas">Ventas</Nav.Link>
             <Nav.Link as={NavLink} to="/rutas">Rutas</Nav.Link>
             <Nav.Link as={NavLink} to="/mapa">Mapa</Nav.Link>
+            <Nav.Link as={NavLink} to="/recordatorios">Recordatorios</Nav.Link>
           </Nav>
         </Navbar.Collapse>
       </Container>

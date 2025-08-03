@@ -1,7 +1,8 @@
 .map-view {
   display: flex;
-  height: 100vh;
+  height: 100%;
   background: #f5f7fa;
+  flex: 1;
 }
 
 .map-container {
