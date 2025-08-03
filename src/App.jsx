@@ -6,6 +6,7 @@ import Clientes from './pages/Clientes/Clientes'
 import Map from './pages/Map'
 import Kombuchas from './pages/Kombuchas/Kombuchas'
 import Ventas from './pages/Ventas/Ventas'
+import Ruta from './pages/Rutas'
 
 function App() {
   return (
@@ -17,7 +18,7 @@ function App() {
           <Route path="/clientes" element={<Clientes />} />
           <Route path="/kombuchas" element={<Kombuchas />} />
           <Route path="/ventas" element={<Ventas />} />
-          <Route path="/rutas" element={<div className="container mt-4"><h1>Rutas Page</h1><p>Coming soon...</p></div>} />
+          <Route path="/rutas" element={<Ruta />} />
           <Route path="/mapa" element={<Map />} />
         </Routes>
       </BrowserRouter>
