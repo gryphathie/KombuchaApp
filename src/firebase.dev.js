@@ -10,13 +10,13 @@ import { getStorage } from 'firebase/storage';
 // Development Firebase configuration
 // Replace these with your development Firebase project config
 const firebaseConfig = {
-  apiKey: "YOUR_DEV_API_KEY",
-  authDomain: "your-dev-project.firebaseapp.com",
-  projectId: "your-dev-project-id",
-  storageBucket: "your-dev-project.firebasestorage.app",
-  messagingSenderId: "YOUR_DEV_SENDER_ID",
-  appId: "YOUR_DEV_APP_ID",
-  measurementId: "YOUR_DEV_MEASUREMENT_ID"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { loadGoogleMapsAPI } from '../../utils/loadGoogleMaps';
 import './AddressAutocomplete.css';
 
 const AddressAutocomplete = ({ 
@@ -17,12 +18,19 @@ const AddressAutocomplete = ({
 
   useEffect(() => {
     // Initialize Google Maps services
-    if (window.google && window.google.maps) {
-      autocompleteService.current = new window.google.maps.places.AutocompleteService();
-      placesService.current = new window.google.maps.places.PlacesService(
-        document.createElement('div')
-      );
-    }
+    const initializeGoogleMaps = async () => {
+      try {
+        await loadGoogleMapsAPI();
+        autocompleteService.current = new window.google.maps.places.AutocompleteService();
+        placesService.current = new window.google.maps.places.PlacesService(
+          document.createElement('div')
+        );
+      } catch (error) {
+        console.error('Failed to load Google Maps:', error);
+      }
+    };
+
+    initializeGoogleMaps();
   }, []);
 
   useEffect(() => {
