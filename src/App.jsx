@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { useEffect } from 'react'
 import './App.css'
 import Dashboard from './pages/Dashboard'
 import NavBar from './pages/Navbar'
@@ -12,15 +11,9 @@ import Recordatorios from './pages/Recordatorios'
 import Login from './pages/Login'
 import { AuthProvider } from './contexts/AuthContext'
 import UserManagement from './components/UserManagement'
-import { handleGitHubPagesRedirect } from './utils/redirectHandler'
 
 // Component to handle routing logic
 function AppRoutes() {
-  useEffect(() => {
-    // Handle GitHub Pages redirects on app load
-    handleGitHubPagesRedirect();
-  }, []);
-
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
