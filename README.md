@@ -58,16 +58,42 @@ npm run dev
 
 ## Deployment
 
-### GitHub Pages
+This project supports multiple deployment environments for development and production.
 
-1. Push your code to GitHub
-2. Run the deployment command:
+### Environments
+
+- **Development**: `https://gabrielathie.github.io/KombuchaApp/dev/`
+- **Production**: `https://gabrielathie.github.io/KombuchaApp/`
+
+### Manual Deployment
+
+Deploy to development:
 
 ```bash
-npm run deploy
+npm run deploy:dev
 ```
 
-3. Your app will be available at: `https://gabrielathie.github.io/KombuchaApp`
+Deploy to production:
+
+```bash
+npm run deploy:prod
+```
+
+Or use the deployment script:
+
+```bash
+./scripts/deploy.sh dev    # Deploy to development
+./scripts/deploy.sh prod   # Deploy to production
+```
+
+### Automatic Deployment (GitHub Actions)
+
+The project includes GitHub Actions workflows that automatically deploy:
+
+- Push to `develop` branch → Deploy to development environment
+- Push to `main` branch → Deploy to production environment
+
+For detailed deployment information, see [DEPLOYMENT.md](./DEPLOYMENT.md).
 
 ### Firebase Hosting (Alternative)
 
