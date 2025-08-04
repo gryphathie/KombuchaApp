@@ -9,7 +9,6 @@ import Ventas from './pages/Ventas/Ventas'
 import Ruta from './pages/Rutas'
 import Recordatorios from './pages/Recordatorios'
 import Login from './pages/Login'
-import ProtectedRoute from './components/ProtectedRoute'
 import { AuthProvider } from './contexts/AuthContext'
 import UserManagement from './components/UserManagement'
 
@@ -21,84 +20,64 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/" element={
-              <ProtectedRoute>
-                <>
-                  <NavBar />
-                  <Dashboard />
-                </>
-              </ProtectedRoute>
+              <>
+                <NavBar />
+                <Dashboard />
+              </>
             } />
             <Route path="/KombuchaApp" element={
-              <ProtectedRoute>
-                <>
-                  <NavBar />
-                  <Dashboard />
-                </>
-              </ProtectedRoute>
+              <>
+                <NavBar />
+                <Dashboard />
+              </>
             } />
             <Route path="/clientes" element={
-              <ProtectedRoute>
-                <>
-                  <NavBar />
-                  <Clientes />
-                </>
-              </ProtectedRoute>
+              <>
+                <NavBar />
+                <Clientes />
+              </>
             } />
             <Route path="/kombuchas" element={
-              <ProtectedRoute>
-                <>
-                  <NavBar />
-                  <Kombuchas />
-                </>
-              </ProtectedRoute>
+              <>
+                <NavBar />
+                <Kombuchas />
+              </>
             } />
             <Route path="/ventas" element={
-              <ProtectedRoute>
-                <>
-                  <NavBar />
-                  <Ventas />
-                </>
-              </ProtectedRoute>
+              <>
+                <NavBar />
+                <Ventas />
+              </>
             } />
             <Route path="/rutas" element={
-              <ProtectedRoute>
-                <>
-                  <NavBar />
-                  <Ruta />
-                </>
-              </ProtectedRoute>
+              <>
+                <NavBar />
+                <Ruta />
+              </>
             } />
             <Route path="/mapa" element={
-              <ProtectedRoute>
-                <>
-                  <NavBar />
-                  <Map />
-                </>
-              </ProtectedRoute>
+              <>
+                <NavBar />
+                <Map />
+              </>
             } />
             <Route path="/recordatorios" element={
-              <ProtectedRoute>
-                <>
-                  <NavBar />
-                  <Recordatorios />
-                </>
-              </ProtectedRoute>
+              <>
+                <NavBar />
+                <Recordatorios />
+              </>
             } />
             <Route path="/KombuchaApp/recordatorios" element={
-              <ProtectedRoute>
-                <>
-                  <NavBar />
-                  <Recordatorios />
-                </>
-              </ProtectedRoute>
+              <>
+                <NavBar />
+                <Recordatorios />
+              </>
             } />
             <Route path="/usuarios" element={
-              <ProtectedRoute>
-                <>
-                  <NavBar />
-                  <UserManagement />
-                </>
-              </ProtectedRoute>
+              <>
+                <NavBar />
+                <UserManagement />
+              </>
             } />
           </Routes>
         </BrowserRouter>

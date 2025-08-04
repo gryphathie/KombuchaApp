@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://gabrielathie.github.io/KombuchaApp",
+  "homepage": "https://gryphathie.github.io/KombuchaApp/KombuchaApp",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
