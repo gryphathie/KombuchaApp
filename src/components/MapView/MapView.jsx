@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { loadGoogleMapsAPI } from '../../utils/loadGoogleMaps';
 import { LOCATION_CONFIG } from '../../config/locationConfig';
 import './MapView.css';
 
@@ -9,7 +10,10 @@ const MapView = ({ clientes = [], center = null, zoom = 12 }) => {
 
   useEffect(() => {
     // Initialize map when component mounts
-    if (window.google && window.google.maps && mapRef.current) {
+    const initializeMap = async () => {
+      try {
+        await loadGoogleMapsAPI();
+        if (mapRef.current) {
       const defaultCenter = center || LOCATION_CONFIG.defaultMapCenter;
       
       mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
@@ -23,7 +27,13 @@ const MapView = ({ clientes = [], center = null, zoom = 12 }) => {
           }
         ]
       });
-    }
+        }
+      } catch (error) {
+        console.error('Failed to load Google Maps:', error);
+      }
+    };
+
+    initializeMap();
   }, [center, zoom]);
 
   useEffect(() => {
@@ -33,8 +43,11 @@ const MapView = ({ clientes = [], center = null, zoom = 12 }) => {
     });
     markersRef.current = [];
 
-          // Add markers for clients with coordinates
-      if (mapInstanceRef.current && clientes.length > 0) {
+    // Add markers for clients with coordinates
+    const addMarkers = async () => {
+      try {
+        await loadGoogleMapsAPI();
+        if (mapInstanceRef.current && clientes.length > 0) {
         const bounds = new window.google.maps.LatLngBounds();
         let hasValidMarkers = false;
 
@@ -103,7 +116,13 @@ const MapView = ({ clientes = [], center = null, zoom = 12 }) => {
           mapInstanceRef.current.setZoom(Math.min(mapInstanceRef.current.getZoom(), 15));
         });
       }
-    }
+        }
+      } catch (error) {
+        console.error('Failed to load Google Maps for markers:', error);
+      }
+    };
+
+    addMarkers();
   }, [clientes]);
 
   return (

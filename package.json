@@ -3,18 +3,14 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://gabrielathie.github.io/KombuchaApp",
+  "homepage": "https://gryphathie.github.io/KombuchaApp/KombuchaApp",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:dev": "vite build --mode development",
-    "build:prod": "vite build --mode production",
     "lint": "eslint .",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist",
-    "deploy:dev": "npm run build:dev && gh-pages -d dist -b gh-pages-dev",
-    "deploy:prod": "npm run build:prod && gh-pages -d dist -b gh-pages"
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "@popperjs/core": "^2.11.8",

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { loadGoogleMapsAPI } from '../../utils/loadGoogleMaps';
 import './AddressPreviewMap.css';
 
 const AddressPreviewMap = ({ address, coordinates, onClose }) => {
@@ -8,7 +9,10 @@ const AddressPreviewMap = ({ address, coordinates, onClose }) => {
 
   useEffect(() => {
     // Initialize map when component mounts
-    if (window.google && window.google.maps && mapRef.current && coordinates) {
+    const initializeMap = async () => {
+      try {
+        await loadGoogleMapsAPI();
+        if (mapRef.current && coordinates) {
       const center = {
         lat: parseFloat(coordinates.lat),
         lng: parseFloat(coordinates.lng)
@@ -65,7 +69,13 @@ const AddressPreviewMap = ({ address, coordinates, onClose }) => {
       markerRef.current.addListener('click', () => {
         infoWindow.open(mapInstanceRef.current, markerRef.current);
       });
-    }
+        }
+      } catch (error) {
+        console.error('Failed to load Google Maps:', error);
+      }
+    };
+
+    initializeMap();
   }, [address, coordinates]);
 
   if (!coordinates) {

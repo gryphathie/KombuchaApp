@@ -9,115 +9,75 @@ import Ventas from './pages/Ventas/Ventas'
 import Ruta from './pages/Rutas'
 import Recordatorios from './pages/Recordatorios'
 import Login from './pages/Login'
-import ProtectedRoute from './components/ProtectedRoute'
 import { AuthProvider } from './contexts/AuthContext'
 import UserManagement from './components/UserManagement'
-import { getEnvironmentConfig, isDevelopment } from './config/envConfig'
 
 function App() {
-  const config = getEnvironmentConfig()
-  
   return (
     <AuthProvider>
       <div className="App">
-        {isDevelopment() && (
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            background: '#ff6b6b',
-            color: 'white',
-            textAlign: 'center',
-            padding: '5px',
-            zIndex: 9999,
-            fontSize: '12px'
-          }}>
-            🚧 DEVELOPMENT MODE - {config.title} 🚧
-          </div>
-        )}
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/" element={
-              <ProtectedRoute>
-                <>
-                  <NavBar />
-                  <Dashboard />
-                </>
-              </ProtectedRoute>
+              <>
+                <NavBar />
+                <Dashboard />
+              </>
             } />
             <Route path="/KombuchaApp" element={
-              <ProtectedRoute>
-                <>
-                  <NavBar />
-                  <Dashboard />
-                </>
-              </ProtectedRoute>
+              <>
+                <NavBar />
+                <Dashboard />
+              </>
             } />
             <Route path="/clientes" element={
-              <ProtectedRoute>
-                <>
-                  <NavBar />
-                  <Clientes />
-                </>
-              </ProtectedRoute>
+              <>
+                <NavBar />
+                <Clientes />
+              </>
             } />
             <Route path="/kombuchas" element={
-              <ProtectedRoute>
-                <>
-                  <NavBar />
-                  <Kombuchas />
-                </>
-              </ProtectedRoute>
+              <>
+                <NavBar />
+                <Kombuchas />
+              </>
             } />
             <Route path="/ventas" element={
-              <ProtectedRoute>
-                <>
-                  <NavBar />
-                  <Ventas />
-                </>
-              </ProtectedRoute>
+              <>
+                <NavBar />
+                <Ventas />
+              </>
             } />
             <Route path="/rutas" element={
-              <ProtectedRoute>
-                <>
-                  <NavBar />
-                  <Ruta />
-                </>
-              </ProtectedRoute>
+              <>
+                <NavBar />
+                <Ruta />
+              </>
             } />
             <Route path="/mapa" element={
-              <ProtectedRoute>
-                <>
-                  <NavBar />
-                  <Map />
-                </>
-              </ProtectedRoute>
+              <>
+                <NavBar />
+                <Map />
+              </>
             } />
             <Route path="/recordatorios" element={
-              <ProtectedRoute>
-                <>
-                  <NavBar />
-                  <Recordatorios />
-                </>
-              </ProtectedRoute>
+              <>
+                <NavBar />
+                <Recordatorios />
+              </>
             } />
             <Route path="/KombuchaApp/recordatorios" element={
-              <ProtectedRoute>
-                <>
-                  <NavBar />
-                  <Recordatorios />
-                </>
-              </ProtectedRoute>
+              <>
+                <NavBar />
+                <Recordatorios />
+              </>
             } />
             <Route path="/usuarios" element={
-              <ProtectedRoute>
-                <>
-                  <NavBar />
-                  <UserManagement />
-                </>
-              </ProtectedRoute>
+              <>
+                <NavBar />
+                <UserManagement />
+              </>
             } />
           </Routes>
         </BrowserRouter>

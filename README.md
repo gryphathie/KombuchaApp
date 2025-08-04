@@ -16,8 +16,29 @@ A modern web application for tracking your kombucha brewing process. Built with 
 - **Styling**: CSS3 with modern design
 - **Database**: Firebase Firestore
 - **Authentication**: Firebase Auth
+- **Maps**: Google Maps API
 - **Hosting**: GitHub Pages
 - **Routing**: React Router DOM
+
+## Environment Variables
+
+This project uses environment variables to keep API keys secure. Create a `.env` file in the root directory with the following variables:
+
+```env
+# Firebase Configuration
+VITE_FIREBASE_API_KEY=your_firebase_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_project.firebasestorage.app
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
+VITE_FIREBASE_MEASUREMENT_ID=your_measurement_id
+
+# Google Maps API Key
+VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
+```
+
+**Security Note**: The `.env` file is already in `.gitignore` and will not be committed to the repository.
 
 ## Getting Started
 
@@ -42,11 +63,20 @@ cd KombuchaApp
 npm install
 ```
 
-3. Set up Firebase:
+3. Set up Environment Variables:
 
-   - Create a new Firebase project at [Firebase Console](https://console.firebase.google.com/)
-   - Enable Firestore Database and Authentication
-   - Copy your Firebase config to `src/firebase.js`
+   Create a `.env` file in the root directory with your API keys:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   Then edit `.env` and add your actual API keys:
+
+   - **Firebase**: Get your config from [Firebase Console](https://console.firebase.google.com/)
+   - **Google Maps**: Get your API key from [Google Cloud Console](https://console.cloud.google.com/)
+
+   **Important**: Never commit your `.env` file to version control!
 
 4. Start the development server:
 
@@ -58,42 +88,25 @@ npm run dev
 
 ## Deployment
 
-This project supports multiple deployment environments for development and production.
+This project uses a simple branch-based deployment strategy.
 
 ### Environments
 
-- **Development**: `https://gabrielathie.github.io/KombuchaApp/dev/`
-- **Production**: `https://gabrielathie.github.io/KombuchaApp/`
+- **Development**: Work on `develop` branch with development Firebase
+- **Production**: Work on `main` branch with production Firebase
 
-### Manual Deployment
-
-Deploy to development:
+### Deployment
 
 ```bash
-npm run deploy:dev
+npm run deploy
 ```
 
-Deploy to production:
+### Workflow
 
-```bash
-npm run deploy:prod
-```
+1. **Development**: Work on `develop` branch → Deploy to GitHub Pages
+2. **Production**: Merge to `main` branch → Deploy to GitHub Pages
 
-Or use the deployment script:
-
-```bash
-./scripts/deploy.sh dev    # Deploy to development
-./scripts/deploy.sh prod   # Deploy to production
-```
-
-### Automatic Deployment (GitHub Actions)
-
-The project includes GitHub Actions workflows that automatically deploy:
-
-- Push to `develop` branch → Deploy to development environment
-- Push to `main` branch → Deploy to production environment
-
-For detailed deployment information, see [DEPLOYMENT.md](./DEPLOYMENT.md).
+For detailed information, see [SIMPLE_DEPLOYMENT.md](./SIMPLE_DEPLOYMENT.md).
 
 ### Firebase Hosting (Alternative)
 
