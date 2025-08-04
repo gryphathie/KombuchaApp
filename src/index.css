@@ -26,6 +26,13 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+html {
+  overflow-x: hidden; /* Prevent horizontal scrolling at document level */
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
 h1 {
@@ -62,5 +69,39 @@ button:focus-visible {
   }
   button {
     background-color: #f9f9f9;
+  }
+}
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2.5em;
+  }
+  
+  button {
+    padding: 0.8em 1.4em;
+    font-size: 1.1em;
+    min-height: 44px; /* Touch-friendly minimum height */
+  }
+  
+  body, html {
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 2em;
+  }
+  
+  button {
+    padding: 0.7em 1.2em;
+    font-size: 1em;
+  }
+  
+  body {
+    min-width: 280px;
   }
 } 

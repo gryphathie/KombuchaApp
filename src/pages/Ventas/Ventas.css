@@ -2,6 +2,9 @@
   min-height: 100vh;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   padding: 2rem;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+  width: 100%;
+  max-width: 100vw;
 }
 
 .ventas-header {
@@ -40,16 +43,22 @@
   border-radius: 15px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  width: 100%;
+  max-width: 100%;
 }
 
 .ventas-table-container {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+  max-width: 100%;
 }
 
 .ventas-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.9rem;
+  min-width: 600px; /* Ensure table has minimum width for scrolling */
 }
 
 .ventas-table th {
