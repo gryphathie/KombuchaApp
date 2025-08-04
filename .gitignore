@@ -22,3 +22,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment files (keep template files)
+.env
+.env.local
+.env.*.local
+
+# Keep environment templates
+!.env.development
+!.env.production
