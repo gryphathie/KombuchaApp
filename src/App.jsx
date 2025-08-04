@@ -12,30 +12,11 @@ import Login from './pages/Login'
 import ProtectedRoute from './components/ProtectedRoute'
 import { AuthProvider } from './contexts/AuthContext'
 import UserManagement from './components/UserManagement'
-import { getEnvironmentConfig, isDevelopment } from './config/envConfig'
 
 function App() {
-  const config = getEnvironmentConfig()
-  
   return (
     <AuthProvider>
       <div className="App">
-        {isDevelopment() && (
-          <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            background: '#ff6b6b',
-            color: 'white',
-            textAlign: 'center',
-            padding: '5px',
-            zIndex: 9999,
-            fontSize: '12px'
-          }}>
-            🚧 DEVELOPMENT MODE - {config.title} 🚧
-          </div>
-        )}
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />

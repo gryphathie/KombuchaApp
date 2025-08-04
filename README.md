@@ -58,42 +58,25 @@ npm run dev
 
 ## Deployment
 
-This project supports multiple deployment environments for development and production.
+This project uses a simple branch-based deployment strategy.
 
 ### Environments
 
-- **Development**: `https://gabrielathie.github.io/KombuchaApp/dev/`
-- **Production**: `https://gabrielathie.github.io/KombuchaApp/`
+- **Development**: Work on `develop` branch with development Firebase
+- **Production**: Work on `main` branch with production Firebase
 
-### Manual Deployment
-
-Deploy to development:
+### Deployment
 
 ```bash
-npm run deploy:dev
+npm run deploy
 ```
 
-Deploy to production:
+### Workflow
 
-```bash
-npm run deploy:prod
-```
+1. **Development**: Work on `develop` branch → Deploy to GitHub Pages
+2. **Production**: Merge to `main` branch → Deploy to GitHub Pages
 
-Or use the deployment script:
-
-```bash
-./scripts/deploy.sh dev    # Deploy to development
-./scripts/deploy.sh prod   # Deploy to production
-```
-
-### Automatic Deployment (GitHub Actions)
-
-The project includes GitHub Actions workflows that automatically deploy:
-
-- Push to `develop` branch → Deploy to development environment
-- Push to `main` branch → Deploy to production environment
-
-For detailed deployment information, see [DEPLOYMENT.md](./DEPLOYMENT.md).
+For detailed information, see [SIMPLE_DEPLOYMENT.md](./SIMPLE_DEPLOYMENT.md).
 
 ### Firebase Hosting (Alternative)
 
