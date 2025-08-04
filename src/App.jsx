@@ -8,24 +8,102 @@ import Kombuchas from './pages/Kombuchas/Kombuchas'
 import Ventas from './pages/Ventas/Ventas'
 import Ruta from './pages/Rutas'
 import Recordatorios from './pages/Recordatorios'
+import Login from './pages/Login'
+import ProtectedRoute from './components/ProtectedRoute'
+import { AuthProvider } from './contexts/AuthContext'
+import UserManagement from './components/UserManagement'
 
 function App() {
   return (
-    <div className="App">
-      <BrowserRouter>
-        <NavBar />
-        <Routes>
-          <Route path="/KombuchaApp" element={<Dashboard />} />
-          <Route path="/clientes" element={<Clientes />} />
-          <Route path="/kombuchas" element={<Kombuchas />} />
-          <Route path="/ventas" element={<Ventas />} />
-          <Route path="/rutas" element={<Ruta />} />
-          <Route path="/mapa" element={<Map />} />
-          <Route path="/recordatorios" element={<Recordatorios />} />
-          <Route path="/KombuchaApp/recordatorios" element={<Recordatorios />} />
-        </Routes>
-      </BrowserRouter>
-    </div>
+    <AuthProvider>
+      <div className="App">
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/" element={
+              <ProtectedRoute>
+                <>
+                  <NavBar />
+                  <Dashboard />
+                </>
+              </ProtectedRoute>
+            } />
+            <Route path="/KombuchaApp" element={
+              <ProtectedRoute>
+                <>
+                  <NavBar />
+                  <Dashboard />
+                </>
+              </ProtectedRoute>
+            } />
+            <Route path="/clientes" element={
+              <ProtectedRoute>
+                <>
+                  <NavBar />
+                  <Clientes />
+                </>
+              </ProtectedRoute>
+            } />
+            <Route path="/kombuchas" element={
+              <ProtectedRoute>
+                <>
+                  <NavBar />
+                  <Kombuchas />
+                </>
+              </ProtectedRoute>
+            } />
+            <Route path="/ventas" element={
+              <ProtectedRoute>
+                <>
+                  <NavBar />
+                  <Ventas />
+                </>
+              </ProtectedRoute>
+            } />
+            <Route path="/rutas" element={
+              <ProtectedRoute>
+                <>
+                  <NavBar />
+                  <Ruta />
+                </>
+              </ProtectedRoute>
+            } />
+            <Route path="/mapa" element={
+              <ProtectedRoute>
+                <>
+                  <NavBar />
+                  <Map />
+                </>
+              </ProtectedRoute>
+            } />
+            <Route path="/recordatorios" element={
+              <ProtectedRoute>
+                <>
+                  <NavBar />
+                  <Recordatorios />
+                </>
+              </ProtectedRoute>
+            } />
+            <Route path="/KombuchaApp/recordatorios" element={
+              <ProtectedRoute>
+                <>
+                  <NavBar />
+                  <Recordatorios />
+                </>
+              </ProtectedRoute>
+            } />
+            <Route path="/usuarios" element={
+              <ProtectedRoute>
+                <>
+                  <NavBar />
+                  <UserManagement />
+                </>
+              </ProtectedRoute>
+            } />
+          </Routes>
+        </BrowserRouter>
+      </div>
+    </AuthProvider>
   )
 }
 

@@ -1,0 +1,72 @@
+.user-management-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.admin-notice {
+  margin-bottom: 20px;
+}
+
+.admin-notice .alert {
+  border-left: 4px solid #17a2b8;
+}
+
+.user-management-container .card {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border: none;
+  border-radius: 10px;
+}
+
+.user-management-container .card-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-bottom: none;
+  border-radius: 10px 10px 0 0 !important;
+}
+
+.user-management-container .card-header h4 {
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+
+.user-management-container .table {
+  margin-bottom: 0;
+}
+
+.user-management-container .table th {
+  border-top: none;
+  font-weight: 600;
+  color: #495057;
+  background-color: #f8f9fa;
+}
+
+.user-management-container .table td {
+  vertical-align: middle;
+}
+
+.user-management-container .badge {
+  font-size: 0.75rem;
+  padding: 0.375rem 0.75rem;
+}
+
+.user-management-container .spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .user-management-container {
+    padding: 10px;
+  }
+  
+  .user-management-container .table {
+    font-size: 0.875rem;
+  }
+  
+  .user-management-container .table th,
+  .user-management-container .table td {
+    padding: 0.5rem;
+  }
+} 
