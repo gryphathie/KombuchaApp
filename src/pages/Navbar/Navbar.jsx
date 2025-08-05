@@ -65,9 +65,9 @@ function NavBar() {
             <Nav.Link as={NavLink} to="/recordatorios" onClick={handleNavLinkClick}>
               Recordatorios
             </Nav.Link>
-            <Nav.Link as={NavLink} to="/usuarios" onClick={handleNavLinkClick}>
+            {/* <Nav.Link as={NavLink} to="/usuarios" onClick={handleNavLinkClick}>
               Usuarios
-            </Nav.Link>
+            </Nav.Link> */}
           </Nav>
           <Nav className="ms-auto">
             <Nav.Item className="d-flex align-items-center me-3">

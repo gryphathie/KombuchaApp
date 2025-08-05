@@ -93,6 +93,38 @@
   margin-bottom: 4px;
 }
 
+.new-sale-button {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 5;
+}
+
+.new-sale-btn {
+  background: #17c7db;
+  color: white;
+  border: none;
+  border-radius: 20%;
+  width: 18px;
+  height: 18px;
+  font-size: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  opacity: 0.7;
+}
+
+.new-sale-btn:hover {
+  background: #5a2d91;
+  transform: scale(1.05);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  opacity: 1;
+}
+
 
 
 .reminders-indicator {

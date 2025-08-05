@@ -16,21 +16,51 @@ const Kombuchas = () => {
   const [formData, setFormData] = useState({
     nombre: '',
     precio: '',
-    foto: '',
-    descripcion: '',
-    stock: '',
   });
 
-  // Fetch kombuchas from Firebase
+  // Fetch kombuchas and calculate sales from Firebase
   const fetchKombuchas = async () => {
     try {
       setLoading(true);
-      const querySnapshot = await getDocs(collection(db, 'kombuchas'));
-      const kombuchasData = querySnapshot.docs.map(doc => ({
+      
+      // Fetch kombuchas
+      const kombuchasSnapshot = await getDocs(collection(db, 'kombuchas'));
+      const kombuchasData = kombuchasSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
-      setKombuchas(kombuchasData);
+
+      // Fetch sales to calculate ventas count
+      const ventasSnapshot = await getDocs(collection(db, 'ventas'));
+      const ventasData = ventasSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      // Calculate ventas count for each kombucha
+      const kombuchasWithVentas = kombuchasData.map(kombucha => {
+        let ventasCount = 0;
+        
+        ventasData.forEach(venta => {
+          if (venta.items && Array.isArray(venta.items)) {
+            venta.items.forEach(item => {
+              if (item.kombuchaId === kombucha.id) {
+                ventasCount += parseInt(item.cantidad) || 0;
+              }
+            });
+          } else if (venta.kombucha === kombucha.id) {
+            // Fallback for old format
+            ventasCount += parseInt(venta.cantidad) || 0;
+          }
+        });
+
+        return {
+          ...kombucha,
+          ventas: ventasCount
+        };
+      });
+
+      setKombuchas(kombuchasWithVentas);
     } catch (error) {
       console.error('Error fetching kombuchas:', error);
       setError('Error al cargar las kombuchas');
@@ -74,15 +104,13 @@ const Kombuchas = () => {
     try {
       // Validate required fields
       if (!formData.nombre.trim() || !formData.precio.trim()) {
-        setError('Nombre y precio son campos obligatorios');
+        setError('Sabor y precio son campos obligatorios');
         return;
       }
 
       const kombuchaData = {
-        ...formData,
         nombre: formData.nombre.trim(),
         precio: parseFloat(formData.precio) || 0,
-        stock: parseInt(formData.stock) || 0,
         fechaRegistro: editingKombucha ? editingKombucha.fechaRegistro : getMexicoDateTime(),
         fechaActualizacion: getMexicoDateTime()
       };
@@ -95,7 +123,7 @@ const Kombuchas = () => {
         setEditingKombucha(null);
       } else {
         const docRef = await addDoc(collection(db, 'kombuchas'), kombuchaData);
-        setKombuchas(prev => [...prev, { id: docRef.id, ...kombuchaData }]);
+        setKombuchas(prev => [...prev, { id: docRef.id, ...kombuchaData, ventas: 0 }]);
       }
 
       setShowForm(false);
@@ -113,9 +141,6 @@ const Kombuchas = () => {
     setFormData({
       nombre: kombucha.nombre || '',
       precio: kombucha.precio?.toString() || '',
-      foto: kombucha.foto || '',
-      descripcion: kombucha.descripcion || '',
-      stock: kombucha.stock?.toString() || '',
     });
     setShowForm(true);
   };
@@ -144,9 +169,6 @@ const Kombuchas = () => {
     setFormData({
       nombre: '',
       precio: '',
-      foto: '',
-      descripcion: '',
-      stock: '',
     });
     setError('');
   };
@@ -155,7 +177,7 @@ const Kombuchas = () => {
     const aValue = a[sortField];
     const bValue = b[sortField];
     
-    if (sortField === 'precio' || sortField === 'stock') {
+    if (sortField === 'precio' || sortField === 'ventas') {
       const aNum = parseFloat(aValue) || 0;
       const bNum = parseFloat(bValue) || 0;
       return sortDirection === 'asc' ? aNum - bNum : bNum - aNum;
@@ -218,15 +240,13 @@ const Kombuchas = () => {
               <thead>
                 <tr>
                   <th className="sortable" onClick={() => handleSort('nombre')}>
-                    Nombre {getSortIndicator('nombre')}
+                    Sabor Kombucha {getSortIndicator('nombre')}
                   </th>
                   <th className="sortable" onClick={() => handleSort('precio')}>
                     Precio {getSortIndicator('precio')}
                   </th>
-                  <th>Foto</th>
-                  <th>Descripción</th>
-                  <th className="sortable" onClick={() => handleSort('stock')}>
-                    Stock {getSortIndicator('stock')}
+                  <th className="sortable" onClick={() => handleSort('ventas')}>
+                    Ventas {getSortIndicator('ventas')}
                   </th>
                   <th>Acciones</th>
                 </tr>
@@ -236,25 +256,7 @@ const Kombuchas = () => {
                   <tr key={kombucha.id}>
                     <td>{kombucha.nombre}</td>
                     <td className="price-cell">${kombucha.precio?.toFixed(2) || '0.00'}</td>
-                    <td>
-                      {kombucha.foto ? (
-                        <img 
-                          src={kombucha.foto} 
-                          alt={kombucha.nombre}
-                          className="kombucha-image"
-                          onError={(e) => {
-                            e.target.style.display = 'none';
-                            e.target.nextSibling.style.display = 'flex';
-                          }}
-                        />
-                      ) : (
-                        <div className="kombucha-image-placeholder">
-                          Sin foto
-                        </div>
-                      )}
-                    </td>
-                    <td>{kombucha.descripcion || '-'}</td>
-                    <td>{kombucha.stock || 0}</td>
+                    <td>{kombucha.ventas || 0}</td>
                     <td>
                       <div className="actions">
                         <button className="edit-btn" onClick={() => handleEdit(kombucha)}>
@@ -293,7 +295,7 @@ const Kombuchas = () => {
 
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label htmlFor="nombre">Nombre *</label>
+                <label htmlFor="nombre">Sabor *</label>
                 <input
                   type="text"
                   id="nombre"
@@ -301,7 +303,7 @@ const Kombuchas = () => {
                   value={formData.nombre}
                   onChange={handleInputChange}
                   required
-                  placeholder="Nombre de la kombucha"
+                  placeholder="Sabor de la kombucha"
                 />
               </div>
 
@@ -317,43 +319,6 @@ const Kombuchas = () => {
                   min="0"
                   step="0.01"
                   placeholder="0.00"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="foto">URL de la Foto</label>
-                <input
-                  type="url"
-                  id="foto"
-                  name="foto"
-                  value={formData.foto}
-                  onChange={handleInputChange}
-                  placeholder="https://ejemplo.com/foto.jpg"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="descripcion">Descripción</label>
-                <textarea
-                  id="descripcion"
-                  name="descripcion"
-                  value={formData.descripcion}
-                  onChange={handleInputChange}
-                  rows="3"
-                  placeholder="Descripción de la kombucha"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="stock">Stock</label>
-                <input
-                  type="number"
-                  id="stock"
-                  name="stock"
-                  value={formData.stock}
-                  onChange={handleInputChange}
-                  min="0"
-                  placeholder="0"
                 />
               </div>
 

@@ -7,7 +7,7 @@ import {
   formatNotificationMessage,
   getNotificationPriority 
 } from '../../utils/notificationUtils';
-import { formatDateForDisplay } from '../../utils/dateUtils';
+import { formatDateForDisplay, getMexicoDate } from '../../utils/dateUtils';
 import ReminderCalendar from '../../components/ReminderCalendar';
 import './Recordatorios.css';
 
@@ -27,15 +27,28 @@ const Recordatorios = () => {
   const [customers, setCustomers] = useState([]);
   const [showSaleModal, setShowSaleModal] = useState(false);
   const [selectedSale, setSelectedSale] = useState(null);
+  
+  // New sale form states
+  const [showSaleForm, setShowSaleForm] = useState(false);
+  const [kombuchas, setKombuchas] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [saleFormData, setSaleFormData] = useState({
+    fecha: getMexicoDate(),
+    cliente: '',
+    items: [{ kombuchaId: '', cantidad: 1, precio: '' }],
+    total: '0.00',
+    estado: 'pendiente',
+  });
 
   const fetchNotifications = async () => {
     try {
       setLoading(true);
       
-      // Fetch sales and customers data
-      const [salesSnapshot, customersSnapshot, notificationsSnapshot] = await Promise.all([
+      // Fetch sales, customers, and kombuchas data
+      const [salesSnapshot, customersSnapshot, kombuchasSnapshot, notificationsSnapshot] = await Promise.all([
         getDocs(collection(db, 'ventas')),
         getDocs(collection(db, 'clientes')),
+        getDocs(collection(db, 'kombuchas')),
         getDocs(collection(db, 'notifications'))
       ]);
 
@@ -45,6 +58,11 @@ const Recordatorios = () => {
       }));
 
       const customers = customersSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      const kombuchasData = kombuchasSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
@@ -69,6 +87,7 @@ const Recordatorios = () => {
       setStats(getNotificationStats(mergedNotifications));
       setSales(salesData);
       setCustomers(customers);
+      setKombuchas(kombuchasData);
     } catch (error) {
       console.error('Error fetching notifications:', error);
     } finally {
@@ -79,6 +98,36 @@ const Recordatorios = () => {
   useEffect(() => {
     fetchNotifications();
   }, []);
+
+  // Handle Esc key to close forms
+  useEffect(() => {
+    const handleEscKey = (event) => {
+      if (event.key === 'Escape') {
+        if (showContactModal) {
+          setShowContactModal(false);
+          setSelectedNotification(null);
+          setContactNotes('');
+        }
+        if (showSaleModal) {
+          setShowSaleModal(false);
+          setSelectedSale(null);
+        }
+        if (showSaleForm) {
+          handleSaleFormCancel();
+        }
+      }
+    };
+
+    // Add event listener when modals are open
+    if (showContactModal || showSaleModal || showSaleForm) {
+      document.addEventListener('keydown', handleEscKey);
+    }
+
+    // Cleanup event listener
+    return () => {
+      document.removeEventListener('keydown', handleEscKey);
+    };
+  }, [showContactModal, showSaleModal, showSaleForm]);
 
   const saveNotificationStatus = async (notificationId, status, notes = '') => {
     try {
@@ -139,9 +188,9 @@ const Recordatorios = () => {
   };
 
   const handleDateClick = (date, remindersForDate) => {
+    // Removed filtering logic - just store the date for reference
     setSelectedDate(date);
     setRemindersForSelectedDate(remindersForDate);
-    setFilter('all'); // Reset filter when selecting a date
   };
 
   const handleReminderClick = (reminder) => {
@@ -160,29 +209,151 @@ const Recordatorios = () => {
     return customer ? customer.nombre : 'Cliente no encontrado';
   };
 
-  const getFilteredNotifications = () => {
-    let filtered = notifications;
-    
-    // If a date is selected, filter by that date
-    if (selectedDate) {
-      const dateKey = selectedDate.toISOString().split('T')[0];
-      filtered = remindersForSelectedDate;
+  // Sale form handling functions
+  const handleSaleFormInputChange = (e) => {
+    const { name, value } = e.target;
+    setSaleFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSaleItemChange = (index, field, value) => {
+    setSaleFormData(prev => {
+      const newItems = [...prev.items];
+      newItems[index] = {
+        ...newItems[index],
+        [field]: value
+      };
+
+      // Auto-populate price when kombucha is selected
+      if (field === 'kombuchaId' && value) {
+        const selectedKombucha = kombuchas.find(k => k.id === value);
+        if (selectedKombucha && selectedKombucha.precio) {
+          newItems[index].precio = selectedKombucha.precio.toString();
+        }
+      }
+
+      // Auto-calculate total
+      const total = newItems.reduce((sum, item) => {
+        const itemTotal = (parseFloat(item.cantidad) || 0) * (parseFloat(item.precio) || 0);
+        return sum + itemTotal;
+      }, 0);
+
+      return {
+        ...prev,
+        items: newItems,
+        total: total.toFixed(2)
+      };
+    });
+  };
+
+  const addSaleItem = () => {
+    setSaleFormData(prev => ({
+      ...prev,
+      items: [...prev.items, { kombuchaId: '', cantidad: 1, precio: '' }]
+    }));
+  };
+
+  const removeSaleItem = (index) => {
+    setSaleFormData(prev => ({
+      ...prev,
+      items: prev.items.filter((_, i) => i !== index)
+    }));
+  };
+
+  const getKombuchaName = (kombuchaId) => {
+    const kombucha = kombuchas.find(k => k.id === kombuchaId);
+    return kombucha ? kombucha.nombre : 'Kombucha no encontrada';
+  };
+
+  const getOriginalPrice = (kombuchaId) => {
+    const kombucha = kombuchas.find(k => k.id === kombuchaId);
+    return kombucha ? kombucha.precio : null;
+  };
+
+  const isPriceModified = (item) => {
+    if (!item.kombuchaId) return false;
+    const originalPrice = getOriginalPrice(item.kombuchaId);
+    return originalPrice && parseFloat(item.precio) !== parseFloat(originalPrice);
+  };
+
+  const handleSaleFormSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+
+    try {
+      const saleData = {
+        ...saleFormData,
+        fecha: saleFormData.fecha,
+        total: parseFloat(saleFormData.total),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      await addDoc(collection(db, 'ventas'), saleData);
+      
+      // Reset form and close modal
+      setSaleFormData({
+        fecha: getMexicoDate(),
+        cliente: '',
+        items: [{ kombuchaId: '', cantidad: 1, precio: '' }],
+        total: '0.00',
+        estado: 'pendiente',
+      });
+      setShowSaleForm(false);
+      
+      // Refresh data
+      await fetchNotifications();
+    } catch (error) {
+      console.error('Error creating sale:', error);
+    } finally {
+      setSubmitting(false);
     }
+  };
+
+  const handleSaleFormCancel = () => {
+    setSaleFormData({
+      fecha: getMexicoDate(),
+      cliente: '',
+      items: [{ kombuchaId: '', cantidad: 1, precio: '' }],
+      total: '0.00',
+      estado: 'pendiente',
+    });
+    setShowSaleForm(false);
+  };
+
+  const handleDateClickForSale = (date) => {
+    setSelectedDate(date);
+    const dateKey = date.toISOString().split('T')[0];
+    const remindersForDate = notifications.filter(n => 
+      n.status === 'pending' && n.reminderDate === dateKey
+    );
+    setRemindersForSelectedDate(remindersForDate);
     
-    // Apply status filter
+    // Set the selected date in the sale form
+    setSaleFormData(prev => ({
+      ...prev,
+      fecha: dateKey
+    }));
+    setShowSaleForm(true);
+  };
+
+  const getFilteredNotifications = () => {
+    // Apply status filter only - removed date filtering
     switch (filter) {
       case 'pending':
-        return filtered.filter(n => n.status === 'pending');
+        return notifications.filter(n => n.status === 'pending');
       case 'overdue':
-        return filtered.filter(n => n.status === 'pending' && n.isDue);
+        return notifications.filter(n => n.status === 'pending' && n.isDue);
       case 'upcoming':
-        return filtered.filter(n => n.status === 'pending' && !n.isDue);
+        return notifications.filter(n => n.status === 'pending' && !n.isDue);
       case 'contacted':
-        return filtered.filter(n => n.status === 'contacted');
+        return notifications.filter(n => n.status === 'contacted');
       case 'dismissed':
-        return filtered.filter(n => n.status === 'dismissed');
+        return notifications.filter(n => n.status === 'dismissed');
       default:
-        return filtered;
+        return notifications;
     }
   };
 
@@ -246,7 +417,7 @@ const Recordatorios = () => {
             className={`view-btn ${!showCalendar ? 'active' : ''}`}
             onClick={() => setShowCalendar(false)}
           >
-            📋 Vista Lista
+            📋 Lista recordatorios
           </button>
         </div>
         
@@ -254,7 +425,7 @@ const Recordatorios = () => {
           <div className="selected-date-info">
             <span>
               {formatDateForDisplay(selectedDate.toISOString().split('T')[0])} - 
-              {remindersForSelectedDate.length} recordatorios
+              Fecha seleccionada
             </span>
             <button 
               className="clear-date-btn"
@@ -276,6 +447,7 @@ const Recordatorios = () => {
           onDateClick={handleDateClick}
           onReminderClick={handleReminderClick}
           onSaleClick={handleSaleClick}
+          onDateClickForSale={handleDateClickForSale}
         />
       )}
 
@@ -356,11 +528,7 @@ const Recordatorios = () => {
                     <span className="value text-center">{notification.totalKombuchas}</span>
                   </div>
                   <div className="detail-row">
-                    <span className="label">Días de espera:</span>
-                    <span className="value">{notification.daysToWait}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="label">Fecha recordatorio:</span>
+                    <span className="label">Recordatorio:</span>
                     <span className="value">{formatDateForDisplay(notification.reminderDate)}</span>
                   </div>
                   {notification.isDue && (
@@ -373,18 +541,6 @@ const Recordatorios = () => {
                     <div className="detail-row upcoming">
                       <span className="label">Días restantes:</span>
                       <span className="value">{notification.daysUntilDue}</span>
-                    </div>
-                  )}
-                  {notification.customerPhone && (
-                    <div className="detail-row">
-                      <span className="label">Teléfono:</span>
-                      <span className="value">{notification.customerPhone}</span>
-                    </div>
-                  )}
-                  {notification.customerAddress && (
-                    <div className="detail-row">
-                      <span className="label">Dirección:</span>
-                      <span className="value">{notification.customerAddress}</span>
                     </div>
                   )}
                 </div>
@@ -518,6 +674,267 @@ const Recordatorios = () => {
                 Cerrar
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* New Sale Form Modal */}
+      {showSaleForm && (
+        <div className="modal-overlay">
+          <div className="modal-content sale-form-modal">
+            <h2>Nueva Venta - {formatDateForDisplay(saleFormData.fecha)}</h2>
+            
+            <form onSubmit={handleSaleFormSubmit}>
+              <div className="form-group">
+                <label htmlFor="fecha">Fecha *</label>
+                <input
+                  type="date"
+                  id="fecha"
+                  name="fecha"
+                  value={saleFormData.fecha}
+                  onChange={handleSaleFormInputChange}
+                  required
+                />
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="cliente">Cliente *</label>
+                <select
+                  id="cliente"
+                  name="cliente"
+                  value={saleFormData.cliente}
+                  onChange={handleSaleFormInputChange}
+                  required
+                >
+                  <option value="">Selecciona un cliente</option>
+                  {customers.map(cliente => (
+                    <option key={cliente.id} value={cliente.id}>
+                      {cliente.nombre}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="form-group">
+                <label>Productos de la Venta *</label>
+                <div style={{ marginBottom: '1rem' }}>
+                  <button 
+                    type="button" 
+                    onClick={addSaleItem}
+                    style={{
+                      background: '#4299e1',
+                      color: 'white',
+                      border: 'none',
+                      padding: '0.5rem 1rem',
+                      borderRadius: '5px',
+                      cursor: 'pointer',
+                      fontSize: '0.9rem'
+                    }}
+                  >
+                    + Agregar Producto
+                  </button>
+                </div>
+                
+                {saleFormData.items.map((item, index) => (
+                  <div key={index} style={{ 
+                    border: '1px solid #667eea', 
+                    borderRadius: '8px', 
+                    padding: '1rem', 
+                    marginBottom: '1rem',
+                    backgroundColor: 'rgb(102, 126, 234)',
+                    color: 'white'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                      <h4 style={{ color: 'white', margin: 0 }}>Producto {index + 1}</h4>
+                      {saleFormData.items.length > 1 && (
+                        <button 
+                          type="button" 
+                          onClick={() => removeSaleItem(index)}
+                          style={{
+                            background: '#f56565',
+                            color: 'white',
+                            border: 'none',
+                            padding: '0.25rem 0.5rem',
+                            borderRadius: '3px',
+                            cursor: 'pointer',
+                            fontSize: '0.8rem'
+                          }}
+                        >
+                          Eliminar
+                        </button>
+                      )}
+                    </div>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                      <div>
+                        <label style={{ color: 'white', fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>
+                          Kombucha *
+                        </label>
+                        <select
+                          value={item.kombuchaId}
+                          onChange={(e) => handleSaleItemChange(index, 'kombuchaId', e.target.value)}
+                          style={{
+                            width: '100%',
+                            padding: '0.5rem',
+                            border: '2px solid #667eea',
+                            borderRadius: '5px',
+                            backgroundColor: 'white',
+                            color: '#2d3748'
+                          }}
+                          required
+                        >
+                          <option value="">Selecciona una kombucha</option>
+                          {kombuchas.map(kombucha => (
+                            <option key={kombucha.id} value={kombucha.id}>
+                              {kombucha.nombre} - ${kombucha.precio?.toFixed(2) || '0.00'}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      
+                      <div>
+                        <label style={{ color: 'white', fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>
+                          Cantidad *
+                        </label>
+                        <input
+                          type="number"
+                          value={item.cantidad}
+                          onChange={(e) => handleSaleItemChange(index, 'cantidad', e.target.value)}
+                          min="1"
+                          style={{
+                            width: '100%',
+                            padding: '0.5rem',
+                            border: '2px solid #667eea',
+                            borderRadius: '5px',
+                            backgroundColor: 'white',
+                            color: '#2d3748'
+                          }}
+                          required
+                        />
+                      </div>
+                      
+                      <div>
+                        <label style={{ color: 'white', fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>
+                          Precio *
+                        </label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={item.precio}
+                          onChange={(e) => handleSaleItemChange(index, 'precio', e.target.value)}
+                          style={{
+                            width: '100%',
+                            padding: '0.5rem',
+                            border: isPriceModified(item) ? '2px solid #f56565' : '2px solid #667eea',
+                            borderRadius: '5px',
+                            backgroundColor: 'white',
+                            color: '#4a5568'
+                          }}
+                          placeholder="0.00"
+                        />
+                        <small style={{ color: 'white', fontSize: '0.7rem' }}>
+                          {item.kombuchaId && getOriginalPrice(item.kombuchaId) ? (
+                            <>
+                              Precio original: ${getOriginalPrice(item.kombuchaId).toFixed(2)}
+                              {isPriceModified(item) && (
+                                <>
+                                  <span style={{ color: '#f56565', fontWeight: 'bold' }}>
+                                    {' '}• Modificado
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSaleItemChange(index, 'precio', getOriginalPrice(item.kombuchaId))}
+                                    style={{
+                                      background: 'none',
+                                      border: 'none',
+                                      color: '#4299e1',
+                                      textDecoration: 'underline',
+                                      cursor: 'pointer',
+                                      fontSize: '0.7rem',
+                                      marginLeft: '0.5rem'
+                                    }}
+                                  >
+                                    Restaurar
+                                  </button>
+                                </>
+                              )}
+                            </>
+                          ) : (
+                            'Precio sugerido del producto (puede ser modificado)'
+                          )}
+                        </small>
+                      </div>
+                    </div>
+                    
+                    <div style={{ 
+                      marginTop: '0.5rem', 
+                      padding: '0.5rem', 
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)', 
+                      borderRadius: '5px',
+                      textAlign: 'center'
+                    }}>
+                      <strong style={{ color: 'white' }}>
+                        Subtotal: ${((parseFloat(item.cantidad) || 0) * (parseFloat(item.precio) || 0)).toFixed(2)}
+                      </strong>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="total">Total *</label>
+                <input
+                  type="number"
+                  id="total"
+                  name="total"
+                  value={saleFormData.total}
+                  readOnly
+                  style={{ 
+                    backgroundColor: '#f7fafc', 
+                    color: '#4a5568',
+                    cursor: 'not-allowed',
+                    fontSize: '1.2rem',
+                    fontWeight: 'bold'
+                  }}
+                />
+                <small style={{ color: '#666', fontSize: '0.8rem' }}>
+                  Calculado automáticamente (suma de todos los productos)
+                </small>
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="estado">Estado *</label>
+                <select
+                  id="estado"
+                  name="estado"
+                  value={saleFormData.estado}
+                  onChange={handleSaleFormInputChange}
+                  required
+                >
+                  <option value="pendiente">Pendiente</option>
+                  <option value="completada">Completada</option>
+                </select>
+              </div>
+              
+              <div className="modal-actions">
+                <button 
+                  type="button" 
+                  className="cancel-btn"
+                  onClick={handleSaleFormCancel}
+                  disabled={submitting}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit" 
+                  className="save-btn"
+                  disabled={submitting}
+                >
+                  {submitting ? 'Guardando...' : 'Guardar Venta'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
