@@ -31,10 +31,10 @@ export const storage = getStorage(app);
 // Set authentication persistence to session only (clears on browser close)
 setPersistence(auth, browserSessionPersistence)
   .then(() => {
-    console.log('Firebase Auth persistence set to session only');
+    console.log('Firebase Auth persistence set to session only (prod)');
   })
   .catch((error) => {
-    console.error('Error setting Firebase Auth persistence:', error);
+    console.error('Error setting Firebase Auth persistence (prod):', error);
   });
 
-export default app; 
+export default app;
