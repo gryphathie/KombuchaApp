@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../firebase';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import './Login.css';
 
 const Login = () => {
@@ -10,6 +11,33 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
+
+  // Redirect if user is already authenticated
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate('/KombuchaApp');
+    }
+  }, [user, authLoading, navigate]);
+
+  // Show loading while checking authentication
+  if (authLoading) {
+    return (
+      <div className="login-container">
+        <div className="login-card">
+          <div className="login-header">
+            <h1>Kombucha App</h1>
+            <p>Cargando...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't show login form if user is already authenticated
+  if (user) {
+    return null;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();

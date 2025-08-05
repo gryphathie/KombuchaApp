@@ -11,6 +11,7 @@ import Recordatorios from './pages/Recordatorios'
 import Login from './pages/Login'
 import { AuthProvider } from './contexts/AuthContext'
 import UserManagement from './components/UserManagement'
+import ProtectedRoute from './components/ProtectedRoute'
 
 // Component to handle routing logic
 function AppRoutes() {
@@ -18,52 +19,68 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/" element={
-        <>
-          <NavBar />
-          <Dashboard />
-        </>
+        <ProtectedRoute>
+          <>
+            <NavBar />
+            <Dashboard />
+          </>
+        </ProtectedRoute>
       } />
       <Route path="/clientes" element={
-        <>
-          <NavBar />
-          <Clientes />
-        </>
+        <ProtectedRoute>
+          <>
+            <NavBar />
+            <Clientes />
+          </>
+        </ProtectedRoute>
       } />
       <Route path="/kombuchas" element={
-        <>
-          <NavBar />
-          <Kombuchas />
-        </>
+        <ProtectedRoute>
+          <>
+            <NavBar />
+            <Kombuchas />
+          </>
+        </ProtectedRoute>
       } />
       <Route path="/ventas" element={
-        <>
-          <NavBar />
-          <Ventas />
-        </>
+        <ProtectedRoute>
+          <>
+            <NavBar />
+            <Ventas />
+          </>
+        </ProtectedRoute>
       } />
       <Route path="/rutas" element={
-        <>
-          <NavBar />
-          <Ruta />
-        </>
+        <ProtectedRoute>
+          <>
+            <NavBar />
+            <Ruta />
+          </>
+        </ProtectedRoute>
       } />
       <Route path="/mapa" element={
-        <>
-          <NavBar />
-          <Map />
-        </>
+        <ProtectedRoute>
+          <>
+            <NavBar />
+            <Map />
+          </>
+        </ProtectedRoute>
       } />
       <Route path="/recordatorios" element={
-        <>
-          <NavBar />
-          <Recordatorios />
-        </>
+        <ProtectedRoute>
+          <>
+            <NavBar />
+            <Recordatorios />
+          </>
+        </ProtectedRoute>
       } />
       <Route path="/usuarios" element={
-        <>
-          <NavBar />
-          <UserManagement />
-        </>
+        <ProtectedRoute>
+          <>
+            <NavBar />
+            <UserManagement />
+          </>
+        </ProtectedRoute>
       } />
       {/* Catch all route - redirect to main page for any unknown routes */}
       <Route path="*" element={<Navigate to="/" replace />} />

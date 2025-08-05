@@ -1,7 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getAuth } from 'firebase/auth';
+import { getAuth, setPersistence, browserSessionPersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 // TODO: Add SDKs for Firebase products that you want to use
@@ -27,5 +27,14 @@ const analytics = getAnalytics(app);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+
+// Set authentication persistence to session only (clears on browser close)
+setPersistence(auth, browserSessionPersistence)
+  .then(() => {
+    console.log('Firebase Auth persistence set to session only (prod)');
+  })
+  .catch((error) => {
+    console.error('Error setting Firebase Auth persistence (prod):', error);
+  });
 
 export default app;
