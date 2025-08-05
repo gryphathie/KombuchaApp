@@ -98,4 +98,50 @@
   background-position: right 12px center;
   background-size: 20px;
   padding-right: 40px;
+}
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+  .address-input {
+    padding: 14px 16px;
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+  
+  .suggestions-container {
+    max-height: 250px;
+  }
+  
+  .suggestion-item {
+    padding: 14px 16px;
+  }
+  
+  .suggestion-main-text {
+    font-size: 15px;
+  }
+  
+  .suggestion-secondary-text {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .address-input {
+    padding: 12px 14px;
+  }
+  
+  .suggestions-container {
+    max-height: 200px;
+  }
+  
+  .suggestion-item {
+    padding: 12px 14px;
+  }
+  
+  .suggestion-main-text {
+    font-size: 14px;
+  }
+  
+  .suggestion-secondary-text {
+    font-size: 12px;
+  }
 } 

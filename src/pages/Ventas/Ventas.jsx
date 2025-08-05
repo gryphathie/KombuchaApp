@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { useLocation } from 'react-router-dom';
 import { db } from '../../firebase';
 import { getMexicoDate, getMexicoMonth, getMexicoDateTime, formatDateForDisplay, formatMonthYear } from '../../utils/dateUtils';
 import './Ventas.css';
 
 const Ventas = () => {
+  const location = useLocation();
   const [ventas, setVentas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -77,6 +79,17 @@ const Ventas = () => {
     fetchClientes();
   }, []);
 
+  // Handle navigation state from Clientes page
+  useEffect(() => {
+    if (location.state?.selectedCliente && location.state?.showForm) {
+      setFormData(prev => ({
+        ...prev,
+        cliente: location.state.selectedCliente.id
+      }));
+      setShowForm(true);
+    }
+  }, [location.state]);
+
   // Handle sorting
   const handleSort = (field) => {
     setSortField(field);
@@ -105,10 +118,10 @@ const Ventas = () => {
       const updatedItems = [...prev.items];
       updatedItems[index] = { ...updatedItems[index], [field]: value };
       
-      // Auto-fill price when kombucha is selected
+      // Auto-suggest price when kombucha is selected (only if price is empty)
       if (field === 'kombuchaId' && value) {
         const selectedKombucha = kombuchas.find(k => k.id === value);
-        if (selectedKombucha && selectedKombucha.precio) {
+        if (selectedKombucha && selectedKombucha.precio && !updatedItems[index].precio) {
           updatedItems[index].precio = selectedKombucha.precio;
         }
       }
@@ -284,6 +297,19 @@ const Ventas = () => {
   const getClienteName = (clienteId) => {
     const cliente = clientes.find(c => c.id === clienteId);
     return cliente ? cliente.nombre : 'Cliente no encontrado';
+  };
+
+  // Get original product price
+  const getOriginalPrice = (kombuchaId) => {
+    const kombucha = kombuchas.find(k => k.id === kombuchaId);
+    return kombucha ? kombucha.precio : null;
+  };
+
+  // Check if price has been modified
+  const isPriceModified = (item) => {
+    if (!item.kombuchaId || !item.precio) return false;
+    const originalPrice = getOriginalPrice(item.kombuchaId);
+    return originalPrice && parseFloat(item.precio) !== parseFloat(originalPrice);
   };
 
   // Filter sales by month
@@ -699,7 +725,7 @@ const Ventas = () => {
                                                             }}>
                                                                 <strong>{getKombuchaName(item.kombuchaId)}</strong>
                                                                 <br />
-                                                                Cantidad: {item.cantidad} × ${item.precio?.toFixed(2) || '0.00'}
+                                                                Cantidad: {item.cantidad} × ${(parseFloat(item.precio) || 0).toFixed(2)}
                                                             </div>
                                                         ))}
                                                     </div>
@@ -715,13 +741,13 @@ const Ventas = () => {
                                                             }}>
                                                                 <strong>{getKombuchaName(venta.kombucha)}</strong>
                                                                 <br />
-                                                                Cantidad: {venta.cantidad} × ${venta.precio?.toFixed(2) || '0.00'}
+                                                                Cantidad: {venta.cantidad} × ${(parseFloat(venta.precio) || 0).toFixed(2)}
                                                             </div>
                                                         )}
                                                     </div>
                                                 )}
                                             </td>
-                                            <td className="total-cell">${venta.total?.toFixed(2) || '0.00'}</td>
+                                            <td className="total-cell">${(parseFloat(venta.total) || 0).toFixed(2)}</td>
                                             <td>
                                                 <span className={`status-badge status-${venta.estado}`}>
                                                     {venta.estado}
@@ -894,20 +920,50 @@ const Ventas = () => {
                                             </label>
                                             <input
                                                 type="number"
+                                                step="0.01"
+                                                min="0"
                                                 value={item.precio}
-                                                readOnly
+                                                onChange={(e) => handleItemChange(index, 'precio', e.target.value)}
                                                 style={{
                                                     width: '100%',
                                                     padding: '0.5rem',
-                                                    border: '2px solid #667eea',
+                                                    border: isPriceModified(item) ? '2px solid #f56565' : '2px solid #667eea',
                                                     borderRadius: '5px',
-                                                    backgroundColor: '#f7fafc',
-                                                    color: '#4a5568',
-                                                    cursor: 'not-allowed'
+                                                    backgroundColor: 'white',
+                                                    color: '#4a5568'
                                                 }}
+                                                placeholder="0.00"
                                             />
                                             <small style={{ color: 'white', fontSize: '0.7rem' }}>
-                                                Precio automático del producto
+                                                {item.kombuchaId && getOriginalPrice(item.kombuchaId) ? (
+                                                    <>
+                                                        Precio original: ${getOriginalPrice(item.kombuchaId).toFixed(2)}
+                                                        {isPriceModified(item) && (
+                                                            <>
+                                                                <span style={{ color: '#f56565', fontWeight: 'bold' }}>
+                                                                    {' '}• Modificado
+                                                                </span>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleItemChange(index, 'precio', getOriginalPrice(item.kombuchaId))}
+                                                                    style={{
+                                                                        background: 'none',
+                                                                        border: 'none',
+                                                                        color: '#4299e1',
+                                                                        textDecoration: 'underline',
+                                                                        cursor: 'pointer',
+                                                                        fontSize: '0.7rem',
+                                                                        marginLeft: '0.5rem'
+                                                                    }}
+                                                                >
+                                                                    Restaurar
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                    </>
+                                                ) : (
+                                                    'Precio sugerido del producto (puede ser modificado)'
+                                                )}
                                             </small>
                                         </div>
                                     </div>

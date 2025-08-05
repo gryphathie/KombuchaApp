@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import './App.css'
 import Dashboard from './pages/Dashboard'
 import NavBar from './pages/Navbar'
@@ -12,74 +12,71 @@ import Login from './pages/Login'
 import { AuthProvider } from './contexts/AuthContext'
 import UserManagement from './components/UserManagement'
 
+// Component to handle routing logic
+function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/" element={
+        <>
+          <NavBar />
+          <Dashboard />
+        </>
+      } />
+      <Route path="/clientes" element={
+        <>
+          <NavBar />
+          <Clientes />
+        </>
+      } />
+      <Route path="/kombuchas" element={
+        <>
+          <NavBar />
+          <Kombuchas />
+        </>
+      } />
+      <Route path="/ventas" element={
+        <>
+          <NavBar />
+          <Ventas />
+        </>
+      } />
+      <Route path="/rutas" element={
+        <>
+          <NavBar />
+          <Ruta />
+        </>
+      } />
+      <Route path="/mapa" element={
+        <>
+          <NavBar />
+          <Map />
+        </>
+      } />
+      <Route path="/recordatorios" element={
+        <>
+          <NavBar />
+          <Recordatorios />
+        </>
+      } />
+      <Route path="/usuarios" element={
+        <>
+          <NavBar />
+          <UserManagement />
+        </>
+      } />
+      {/* Catch all route - redirect to main page for any unknown routes */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
+
 function App() {
   return (
     <AuthProvider>
       <div className="App">
-        <BrowserRouter>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/" element={
-              <>
-                <NavBar />
-                <Dashboard />
-              </>
-            } />
-            <Route path="/KombuchaApp" element={
-              <>
-                <NavBar />
-                <Dashboard />
-              </>
-            } />
-            <Route path="/clientes" element={
-              <>
-                <NavBar />
-                <Clientes />
-              </>
-            } />
-            <Route path="/kombuchas" element={
-              <>
-                <NavBar />
-                <Kombuchas />
-              </>
-            } />
-            <Route path="/ventas" element={
-              <>
-                <NavBar />
-                <Ventas />
-              </>
-            } />
-            <Route path="/rutas" element={
-              <>
-                <NavBar />
-                <Ruta />
-              </>
-            } />
-            <Route path="/mapa" element={
-              <>
-                <NavBar />
-                <Map />
-              </>
-            } />
-            <Route path="/recordatorios" element={
-              <>
-                <NavBar />
-                <Recordatorios />
-              </>
-            } />
-            <Route path="/KombuchaApp/recordatorios" element={
-              <>
-                <NavBar />
-                <Recordatorios />
-              </>
-            } />
-            <Route path="/usuarios" element={
-              <>
-                <NavBar />
-                <UserManagement />
-              </>
-            } />
-          </Routes>
+        <BrowserRouter basename="/KombuchaApp">
+          <AppRoutes />
         </BrowserRouter>
       </div>
     </AuthProvider>

@@ -137,6 +137,31 @@
   .navbar-nav .nav-link:hover {
     transform: translateX(5px);
   }
+  
+  /* Smooth collapse animation for mobile */
+  .navbar-collapse {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* Add a subtle background to the collapsed menu */
+  .navbar-collapse.show {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+  }
+  
+  /* Improve mobile link spacing */
+  .navbar-nav .nav-link {
+    margin: 0.125rem 0;
+    padding: 0.875rem 1rem !important;
+  }
+  
+  /* Add visual feedback for mobile clicks */
+  .navbar-nav .nav-link:active {
+    background: rgba(255, 255, 255, 0.25) !important;
+    transform: scale(0.98);
+  }
 }
 
 /* Dark mode support */

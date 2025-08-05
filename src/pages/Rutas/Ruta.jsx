@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { useLocation } from 'react-router-dom';
 import { db } from '../../firebase';
 import { getMexicoDate } from '../../utils/dateUtils';
 import MapView from '../../components/MapView';
 import './Ruta.css';
 
 const Ruta = () => {
+  const location = useLocation();
   const [rutas, setRutas] = useState([]);
   const [clientes, setClientes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -61,6 +63,18 @@ const Ruta = () => {
     fetchRutas();
     fetchClientes();
   }, []);
+
+  // Handle navigation state from Clientes page
+  useEffect(() => {
+    if (location.state?.selectedCliente && location.state?.showForm) {
+      setSelectedClientes([location.state.selectedCliente.id]);
+      setFormData(prev => ({
+        ...prev,
+        nombre: `Ruta para ${location.state.selectedCliente.nombre}`
+      }));
+      setShowForm(true);
+    }
+  }, [location.state]);
 
   // Handle sorting
   const handleSort = (field) => {

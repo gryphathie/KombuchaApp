@@ -3,7 +3,7 @@ import { generateCustomerNotifications, getNotificationPriority } from '../../ut
 import { getMexicoDate, getRelativeDate } from '../../utils/dateUtils';
 import './ReminderCalendar.css';
 
-const ReminderCalendar = ({ notifications, sales, onDateClick, onReminderClick, onSaleClick }) => {
+const ReminderCalendar = ({ notifications, sales, onDateClick, onReminderClick, onSaleClick, onDateClickForSale }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [calendarDays, setCalendarDays] = useState([]);
   const [remindersByDate, setRemindersByDate] = useState({});
@@ -115,6 +115,13 @@ const ReminderCalendar = ({ notifications, sales, onDateClick, onReminderClick, 
     onDateClick(date, remindersForDate);
   };
 
+  const handleNewSaleClick = (date, e) => {
+    e.stopPropagation();
+    if (onDateClickForSale) {
+      onDateClickForSale(date);
+    }
+  };
+
   const handleReminderClick = (reminder) => {
     onReminderClick(reminder);
   };
@@ -167,7 +174,18 @@ const ReminderCalendar = ({ notifications, sales, onDateClick, onReminderClick, 
             >
               <div className="day-number">{date.getDate()}</div>
               
-                            {/* Reminders indicator */}
+              {/* New Sale Button */}
+              <div className="new-sale-button">
+                <button
+                  className="new-sale-btn"
+                  onClick={(e) => handleNewSaleClick(date, e)}
+                  title="Registrar nueva venta"
+                >
+                  +
+                </button>
+              </div>
+              
+              {/* Reminders indicator */}
               {remindersForDate.length > 0 && (
                 <div className="reminders-indicator">
                   {remindersForDate.map((reminder, idx) => (
@@ -183,7 +201,11 @@ const ReminderCalendar = ({ notifications, sales, onDateClick, onReminderClick, 
                         }}
                         title={`${reminder.customerName} - ${reminder.isDue ? `${reminder.daysOverdue} días vencido` : `${reminder.daysUntilDue} días restantes`}`}
                       />
-                      <span className="customer-name-tooltip">
+                      <span className="customer-name-tooltip"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleReminderClick(reminder);
+                        }}>
                         {reminder.customerName}
                       </span>
                     </div>

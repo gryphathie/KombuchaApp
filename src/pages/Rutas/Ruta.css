@@ -415,15 +415,59 @@
   height: 100%;
   min-height: 500px;
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .route-map-container .map-view {
   height: 100%;
+  flex: 1;
 }
 
 .route-map-container .map-container {
   height: 100%;
   min-height: 500px;
+}
+
+/* Mobile responsive styles for route map */
+@media (max-width: 768px) {
+  .route-map-container {
+    height: 70vh;
+    min-height: 400px;
+  }
+  
+  .route-map-container .map-view {
+    height: 100%;
+  }
+  
+  .route-map-container .map-container {
+    height: 50%;
+    min-height: 200px;
+  }
+  
+  .route-map-container .map-legend {
+    height: 50%;
+    min-height: 200px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 480px) {
+  .route-map-container {
+    height: 60vh;
+    min-height: 350px;
+  }
+  
+  .route-map-container .map-container {
+    height: 45%;
+    min-height: 150px;
+  }
+  
+  .route-map-container .map-legend {
+    height: 55%;
+    min-height: 150px;
+  }
 }
 
 /* Table Styles */
