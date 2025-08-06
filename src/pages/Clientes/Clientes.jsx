@@ -430,7 +430,7 @@ function Clientes() {
               
               <div className="form-group">
                 <label htmlFor="direccion">Dirección</label>
-                <LocationRestrictions showDetails={true} />
+                <LocationRestrictions showDetails={false} />
                 <AddressAutocomplete
                   value={formData.direccion}
                   onChange={handleAddressChange}

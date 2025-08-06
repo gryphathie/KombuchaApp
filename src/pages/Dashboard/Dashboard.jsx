@@ -42,7 +42,8 @@ function Dashboard() {
     monthlySales: 0,
     monthlyKombuchasSold: 0,
     dailyRevenue: 0,
-    monthlyRevenue: 0
+    monthlyRevenue: 0,
+    monthlyCost: 0
   });
   const [loading, setLoading] = useState(true);
   const [recentSales, setRecentSales] = useState([]);
@@ -100,18 +101,37 @@ function Dashboard() {
       });
       const monthlyRevenue = monthlySales.reduce((sum, sale) => sum + (parseFloat(sale.total) || 0), 0);
 
-      // Calculate monthly kombuchas sold
+      // Calculate monthly kombuchas sold and cost
       let monthlyKombuchasSold = 0;
+      let monthlyCost = 0;
+      
       monthlySales.forEach(sale => {
         if (sale.items && Array.isArray(sale.items)) {
           sale.items.forEach(item => {
-            monthlyKombuchasSold += parseInt(item.cantidad) || 0;
+            const cantidad = parseInt(item.cantidad) || 0;
+            monthlyKombuchasSold += cantidad;
+            
+            // Find the kombucha to get its unit cost
+            const kombucha = kombuchasData.find(k => k.id === item.kombuchaId);
+            if (kombucha && kombucha.costoUnitario) {
+              monthlyCost += cantidad * parseFloat(kombucha.costoUnitario);
+            }
           });
         } else if (sale.cantidad) {
           // Fallback for old format
-          monthlyKombuchasSold += parseInt(sale.cantidad) || 0;
+          const cantidad = parseInt(sale.cantidad) || 0;
+          monthlyKombuchasSold += cantidad;
+          
+          // Find the kombucha to get its unit cost
+          const kombucha = kombuchasData.find(k => k.id === sale.kombucha);
+          if (kombucha && kombucha.costoUnitario) {
+            monthlyCost += cantidad * parseFloat(kombucha.costoUnitario);
+          }
         }
       });
+
+      // Calculate monthly earnings
+      const monthlyEarnings = monthlyRevenue - monthlyCost;
 
       // Get recent sales (last 5)
       const sortedSales = salesData.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
@@ -134,7 +154,9 @@ function Dashboard() {
         monthlySales: monthlySales.length,
         monthlyKombuchasSold,
         dailyRevenue,
-        monthlyRevenue
+        monthlyRevenue,
+        monthlyCost,
+        monthlyEarnings
       });
       setRecentSales(recentSalesData);
       setChartData(chartData);
@@ -307,6 +329,7 @@ function Dashboard() {
           <h3>Ventas del mes</h3>
           <p className="stat-number">{salesStats.monthlySales}</p>
           <p className="stat-subtitle">${salesStats.monthlyRevenue.toFixed(2)}</p>
+          <p className="stat-subtitle">Ganancia: ${salesStats.monthlyEarnings.toFixed(2)}</p>
         </div>
         <div className="stat-card">
           <h3>Kombuchas vendidas</h3>

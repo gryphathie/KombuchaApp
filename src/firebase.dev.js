@@ -3,7 +3,7 @@
 
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getAuth, setPersistence, browserSessionPersistence } from 'firebase/auth';
+import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
@@ -28,10 +28,10 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 
-// Set authentication persistence to session only (clears on browser close)
-setPersistence(auth, browserSessionPersistence)
+// Set authentication persistence to local storage (persists across browser sessions)
+setPersistence(auth, browserLocalPersistence)
   .then(() => {
-    console.log('Firebase Auth persistence set to session only (dev)');
+    console.log('Firebase Auth persistence set to local storage (dev)');
   })
   .catch((error) => {
     console.error('Error setting Firebase Auth persistence (dev):', error);
