@@ -16,6 +16,7 @@ const Kombuchas = () => {
   const [formData, setFormData] = useState({
     nombre: '',
     precio: '',
+    costoUnitario: '',
   });
 
   // Fetch kombuchas and calculate sales from Firebase
@@ -103,14 +104,15 @@ const Kombuchas = () => {
     
     try {
       // Validate required fields
-      if (!formData.nombre.trim() || !formData.precio.trim()) {
-        setError('Sabor y precio son campos obligatorios');
+      if (!formData.nombre.trim() || !formData.precio.trim() || !formData.costoUnitario.trim()) {
+        setError('Sabor, precio y costo unitario son campos obligatorios');
         return;
       }
 
       const kombuchaData = {
         nombre: formData.nombre.trim(),
         precio: parseFloat(formData.precio) || 0,
+        costoUnitario: parseFloat(formData.costoUnitario) || 0,
         fechaRegistro: editingKombucha ? editingKombucha.fechaRegistro : getMexicoDateTime(),
         fechaActualizacion: getMexicoDateTime()
       };
@@ -141,6 +143,7 @@ const Kombuchas = () => {
     setFormData({
       nombre: kombucha.nombre || '',
       precio: kombucha.precio?.toString() || '',
+      costoUnitario: kombucha.costoUnitario?.toString() || '',
     });
     setShowForm(true);
   };
@@ -169,6 +172,7 @@ const Kombuchas = () => {
     setFormData({
       nombre: '',
       precio: '',
+      costoUnitario: '',
     });
     setError('');
   };
@@ -177,7 +181,7 @@ const Kombuchas = () => {
     const aValue = a[sortField];
     const bValue = b[sortField];
     
-    if (sortField === 'precio' || sortField === 'ventas') {
+    if (sortField === 'precio' || sortField === 'ventas' || sortField === 'costoUnitario') {
       const aNum = parseFloat(aValue) || 0;
       const bNum = parseFloat(bValue) || 0;
       return sortDirection === 'asc' ? aNum - bNum : bNum - aNum;
@@ -245,6 +249,9 @@ const Kombuchas = () => {
                   <th className="sortable" onClick={() => handleSort('precio')}>
                     Precio {getSortIndicator('precio')}
                   </th>
+                  <th className="sortable" onClick={() => handleSort('costoUnitario')}>
+                    Costo Unitario {getSortIndicator('costoUnitario')}
+                  </th>
                   <th className="sortable" onClick={() => handleSort('ventas')}>
                     Ventas {getSortIndicator('ventas')}
                   </th>
@@ -256,6 +263,7 @@ const Kombuchas = () => {
                   <tr key={kombucha.id}>
                     <td>{kombucha.nombre}</td>
                     <td className="price-cell">${kombucha.precio?.toFixed(2) || '0.00'}</td>
+                    <td className="price-cell">${kombucha.costoUnitario?.toFixed(2) || '0.00'}</td>
                     <td>{kombucha.ventas || 0}</td>
                     <td>
                       <div className="actions">
@@ -314,6 +322,21 @@ const Kombuchas = () => {
                   id="precio"
                   name="precio"
                   value={formData.precio}
+                  onChange={handleInputChange}
+                  required
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="costoUnitario">Costo Unitario *</label>
+                <input
+                  type="number"
+                  id="costoUnitario"
+                  name="costoUnitario"
+                  value={formData.costoUnitario}
                   onChange={handleInputChange}
                   required
                   min="0"

@@ -1,13 +1,8 @@
 // Configuration for location restrictions in address autocomplete
 export const LOCATION_CONFIG = {
   // Cities where you want to restrict address searches
-  // Add or remove cities as needed
-  restrictedCities: [    
-    'Puebla',
-    'Cholula',
-    'San Andrés Cholula',
-    'San Pedro Cholula',
-  ],
+  // Empty array means no city restrictions - allows any city within the state
+  restrictedCities: [],
   
   // States where you want to restrict address searches
   // Add or remove states as needed
