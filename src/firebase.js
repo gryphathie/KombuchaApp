@@ -1,22 +1,22 @@
-// Import the functions you need from the SDKs you need
+// Development Firebase configuration
+// This file should be used in the develop branch
+
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Development Firebase configuration
+// Replace these with your development Firebase project config
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_PROD_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_PROD_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROD_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_PROD_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_PROD_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_PROD_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_PROD_MEASUREMENT_ID
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase
@@ -31,10 +31,10 @@ export const storage = getStorage(app);
 // Set authentication persistence to local storage (persists across browser sessions)
 setPersistence(auth, browserLocalPersistence)
   .then(() => {
-    console.log('Firebase Auth persistence set to local storage (prod)');
+    console.log('Firebase Auth persistence set to local storage (dev)');
   })
   .catch((error) => {
-    console.error('Error setting Firebase Auth persistence (prod):', error);
+    console.error('Error setting Firebase Auth persistence (dev):', error);
   });
 
-export default app;
+export default app; 

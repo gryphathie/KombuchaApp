@@ -90,14 +90,14 @@ function Dashboard() {
       const today = getMexicoDate(); // YYYY-MM-DD
       const currentMonth = getMexicoMonth(); // YYYY-MM
 
-      // Calculate daily sales
-      const dailySales = salesData.filter(sale => sale.fecha === today);
+      // Calculate daily sales (excluding canceled sales)
+      const dailySales = salesData.filter(sale => sale.fecha === today && sale.estado !== 'cancelada');
       const dailyRevenue = dailySales.reduce((sum, sale) => sum + (parseFloat(sale.total) || 0), 0);
 
-      // Calculate monthly sales
+      // Calculate monthly sales (excluding canceled sales)
       const monthlySales = salesData.filter(sale => {
         const saleMonth = sale.fecha ? sale.fecha.slice(0, 7) : '';
-        return saleMonth === currentMonth;
+        return saleMonth === currentMonth && sale.estado !== 'cancelada';
       });
       const monthlyRevenue = monthlySales.reduce((sum, sale) => sum + (parseFloat(sale.total) || 0), 0);
 
@@ -182,7 +182,7 @@ function Dashboard() {
     }
 
     salesData.forEach(sale => {
-      if (salesByDay.hasOwnProperty(sale.fecha)) {
+      if (salesByDay.hasOwnProperty(sale.fecha) && sale.estado !== 'cancelada') {
         salesByDay[sale.fecha]++;
       }
     });
@@ -190,17 +190,19 @@ function Dashboard() {
     // 2. Top Products
     const productSales = {};
     salesData.forEach(sale => {
-      if (sale.items && Array.isArray(sale.items)) {
-        sale.items.forEach(item => {
-          const kombucha = kombuchasData.find(k => k.id === item.kombuchaId);
+      if (sale.estado !== 'cancelada') {
+        if (sale.items && Array.isArray(sale.items)) {
+          sale.items.forEach(item => {
+            const kombucha = kombuchasData.find(k => k.id === item.kombuchaId);
+            const name = kombucha ? kombucha.nombre : 'Producto desconocido';
+            productSales[name] = (productSales[name] || 0) + parseInt(item.cantidad || 0);
+          });
+        } else if (sale.kombucha) {
+          // Fallback for old format
+          const kombucha = kombuchasData.find(k => k.id === sale.kombucha);
           const name = kombucha ? kombucha.nombre : 'Producto desconocido';
-          productSales[name] = (productSales[name] || 0) + parseInt(item.cantidad || 0);
-        });
-      } else if (sale.kombucha) {
-        // Fallback for old format
-        const kombucha = kombuchasData.find(k => k.id === sale.kombucha);
-        const name = kombucha ? kombucha.nombre : 'Producto desconocido';
-        productSales[name] = (productSales[name] || 0) + parseInt(sale.cantidad || 0);
+          productSales[name] = (productSales[name] || 0) + parseInt(sale.cantidad || 0);
+        }
       }
     });
 
@@ -209,7 +211,9 @@ function Dashboard() {
       .slice(0, 5);
 
     // 3. Revenue Growth (Cumulative)
-    const sortedSales = salesData.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+    const sortedSales = salesData
+      .filter(sale => sale.estado !== 'cancelada')
+      .sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
     const cumulativeRevenue = [];
     let cumulative = 0;
     
@@ -264,15 +268,26 @@ function Dashboard() {
         }]
       },
       salesStatus: {
-        labels: Object.keys(statusCount).map(status => 
-          status === 'completada' ? 'Completadas' : 'Pendientes'
-        ),
+        labels: Object.keys(statusCount).map(status => {
+          switch(status) {
+            case 'completada': return 'Completadas';
+            case 'pendiente': return 'Pendientes';
+            case 'cancelada': return 'Canceladas';
+            case 'pagoPendiente': return 'Pago Pendiente';
+            default: return status;
+          }
+        }),
         datasets: [{
           data: Object.values(statusCount),
-          backgroundColor: [
-            '#38a169',
-            '#d69e2e'
-          ],
+          backgroundColor: Object.keys(statusCount).map(status => {
+            switch(status) {
+              case 'completada': return '#38a169'; // Green
+              case 'pendiente': return '#d69e2e'; // Yellow
+              case 'cancelada': return '#c53030'; // Red
+              case 'pagoPendiente': return '#f093fb'; // Purple
+              default: return '#667eea'; // Blue
+            }
+          }),
           borderWidth: 0
         }]
       }
@@ -540,8 +555,11 @@ function Dashboard() {
                   <p>Cliente: {getClientName(sale.cliente)}</p>
                   <p>Total: ${parseFloat(sale.total || 0).toFixed(2)}</p>
                 </div>
-                <div className={`batch-status ${sale.estado === 'completada' ? 'completed' : 'active'}`}>
-                  {sale.estado === 'completada' ? 'Completada' : 'Pendiente'}
+                <div className={`batch-status ${sale.estado === 'completada' ? 'completed' : sale.estado === 'cancelada' ? 'canceled' : sale.estado === 'pagoPendiente' ? 'payment-pending' : 'active'}`}>
+                  {sale.estado === 'completada' ? 'Completada' : 
+                   sale.estado === 'cancelada' ? 'Cancelada' : 
+                   sale.estado === 'pagoPendiente' ? 'Pago Pendiente' : 
+                   'Pendiente'}
                 </div>
               </div>
             ))

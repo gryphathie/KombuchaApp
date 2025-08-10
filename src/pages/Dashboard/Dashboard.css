@@ -296,6 +296,16 @@
   color: #22543d;
 }
 
+.batch-status.canceled {
+  background-color: #fed7d7;
+  color: #c53030;
+}
+
+.batch-status.payment-pending {
+  background-color: #fef5e7;
+  color: #d69e2e;
+}
+
 @media (max-width: 768px) {
   .dashboard {
     padding: 1rem;
