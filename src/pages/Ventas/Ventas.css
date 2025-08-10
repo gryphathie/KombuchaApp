@@ -127,6 +127,16 @@
   color: #38a169;
 }
 
+.status-cancelada {
+  background-color: #fed7d7;
+  color: #c53030;
+}
+
+.status-pagoPendiente {
+  background-color: #fef5e7;
+  color: #d69e2e;
+}
+
 /* Price and total styling */
 .price-cell, .total-cell {
   font-weight: 600;

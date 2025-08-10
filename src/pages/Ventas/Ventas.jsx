@@ -198,7 +198,7 @@ const Ventas = () => {
             items: validItems,
             total: parseFloat(formData.total),
             estado: formData.estado,
-            fechaRegistro: editingVenta ? editingVenta.fechaRegistro : getMexicoDateTime(),
+            fechaRegistro: editingVenta && editingVenta.fechaRegistro ? editingVenta.fechaRegistro : getMexicoDateTime(),
             fechaActualizacion: getMexicoDateTime()
         };
 
@@ -323,15 +323,21 @@ const Ventas = () => {
   const getMonthlyStats = () => {
     const monthlyVentas = filteredVentas;
     const totalSales = monthlyVentas.length;
-    const totalRevenue = monthlyVentas.reduce((sum, venta) => sum + (parseFloat(venta.total) || 0), 0);
+    const totalRevenue = monthlyVentas
+      .filter(venta => venta.estado !== 'cancelada')
+      .reduce((sum, venta) => sum + (parseFloat(venta.total) || 0), 0);
     const completedSales = monthlyVentas.filter(venta => venta.estado === 'completada').length;
     const pendingSales = monthlyVentas.filter(venta => venta.estado === 'pendiente').length;
+    const canceledSales = monthlyVentas.filter(venta => venta.estado === 'cancelada').length;
+    const paymentPendingSales = monthlyVentas.filter(venta => venta.estado === 'pagoPendiente').length;
 
     return {
       totalSales,
       totalRevenue,
       completedSales,
-      pendingSales
+      pendingSales,
+      canceledSales,
+      paymentPendingSales
     };
   };
 
@@ -355,31 +361,34 @@ const Ventas = () => {
         };
       }
 
-      // Count kombuchas from items
-      if (venta.items && Array.isArray(venta.items)) {
-        venta.items.forEach(item => {
-          const kombuchaName = getKombuchaName(item.kombuchaId);
-          const cantidad = parseFloat(item.cantidad) || 0;
+      // Only count non-canceled sales
+      if (venta.estado !== 'cancelada') {
+        // Count kombuchas from items
+        if (venta.items && Array.isArray(venta.items)) {
+          venta.items.forEach(item => {
+            const kombuchaName = getKombuchaName(item.kombuchaId);
+            const cantidad = parseFloat(item.cantidad) || 0;
+            
+            if (!clientSummary[clienteId].kombuchaCounts[kombuchaName]) {
+              clientSummary[clienteId].kombuchaCounts[kombuchaName] = 0;
+            }
+            clientSummary[clienteId].kombuchaCounts[kombuchaName] += cantidad;
+            clientSummary[clienteId].totalPurchases += cantidad;
+          });
+        } else if (venta.kombucha) {
+          // Fallback for old format
+          const kombuchaName = getKombuchaName(venta.kombucha);
+          const cantidad = parseFloat(venta.cantidad) || 0;
           
           if (!clientSummary[clienteId].kombuchaCounts[kombuchaName]) {
             clientSummary[clienteId].kombuchaCounts[kombuchaName] = 0;
           }
           clientSummary[clienteId].kombuchaCounts[kombuchaName] += cantidad;
           clientSummary[clienteId].totalPurchases += cantidad;
-        });
-      } else if (venta.kombucha) {
-        // Fallback for old format
-        const kombuchaName = getKombuchaName(venta.kombucha);
-        const cantidad = parseFloat(venta.cantidad) || 0;
-        
-        if (!clientSummary[clienteId].kombuchaCounts[kombuchaName]) {
-          clientSummary[clienteId].kombuchaCounts[kombuchaName] = 0;
         }
-        clientSummary[clienteId].kombuchaCounts[kombuchaName] += cantidad;
-        clientSummary[clienteId].totalPurchases += cantidad;
-      }
 
-      clientSummary[clienteId].totalAmount += parseFloat(venta.total) || 0;
+        clientSummary[clienteId].totalAmount += parseFloat(venta.total) || 0;
+      }
       
       // Track last purchase date
       if (!clientSummary[clienteId].lastPurchase || venta.fecha > clientSummary[clienteId].lastPurchase) {
@@ -529,6 +538,30 @@ const Ventas = () => {
                     <h3 style={{ margin: '0 0 0.5rem 0', color: '#4a5568', fontSize: '0.9rem' }}>Pendientes</h3>
                     <p style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold', color: '#d69e2e' }}>
                         {monthlyStats.pendingSales}
+                    </p>
+                </div>
+                <div style={{ 
+                    textAlign: 'center', 
+                    padding: '1rem', 
+                    backgroundColor: 'white', 
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                }}>
+                    <h3 style={{ margin: '0 0 0.5rem 0', color: '#4a5568', fontSize: '0.9rem' }}>Canceladas</h3>
+                    <p style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold', color: '#c53030' }}>
+                        {monthlyStats.canceledSales}
+                    </p>
+                </div>
+                <div style={{ 
+                    textAlign: 'center', 
+                    padding: '1rem', 
+                    backgroundColor: 'white', 
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                }}>
+                    <h3 style={{ margin: '0 0 0.5rem 0', color: '#4a5568', fontSize: '0.9rem' }}>Pago Pendiente</h3>
+                    <p style={{ margin: 0, fontSize: '2rem', fontWeight: 'bold', color: '#d69e2e' }}>
+                        {monthlyStats.paymentPendingSales}
                     </p>
                 </div>
             </div>
@@ -1013,6 +1046,8 @@ const Ventas = () => {
                                 required
                             >
                                 <option value="pendiente">Pendiente</option>
+                                <option value="cancelada">Cancelada</option>
+                                <option value="pagoPendiente">Pago Pendiente</option>
                                 <option value="completada">Completada</option>
                             </select>
                         </div>
