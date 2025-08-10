@@ -31,10 +31,10 @@ export const storage = getStorage(app);
 // Set authentication persistence to local storage (persists across browser sessions)
 setPersistence(auth, browserLocalPersistence)
   .then(() => {
-    console.log('Firebase Auth persistence set to local storage (prod)');
+    console.log('Firebase Auth persistence set to local storage (dev)');
   })
   .catch((error) => {
-    console.error('Error setting Firebase Auth persistence (prod):', error);
+    console.error('Error setting Firebase Auth persistence (dev):', error);
   });
 
-export default app;
+export default app; 
