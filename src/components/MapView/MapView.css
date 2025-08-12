@@ -38,6 +38,10 @@
   flex-direction: column;
   gap: 0.75rem;
   padding-bottom: 1rem;
+  max-height: 300px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e0 #f7fafc;
 }
 
 .legend-item {
@@ -46,12 +50,21 @@
   gap: 0.75rem;
   padding: 0.5rem;
   border-radius: 6px;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
   min-height: 44px; /* Touch-friendly minimum height */
+  cursor: pointer;
+  user-select: none;
 }
 
 .legend-item:hover {
   background-color: #f7fafc;
+  transform: translateX(2px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.legend-item:active {
+  transform: translateX(1px);
+  background-color: #edf2f7;
 }
 
 .legend-marker {
