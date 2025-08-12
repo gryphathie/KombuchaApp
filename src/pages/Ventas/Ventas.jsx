@@ -12,7 +12,7 @@ const Ventas = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingVenta, setEditingVenta] = useState(null);
   const [sortField, setSortField] = useState('fecha');
-  const [sortDirection, setSortDirection] = useState('asc');
+  const [sortDirection, setSortDirection] = useState('desc');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [kombuchas, setKombuchas] = useState([]);
@@ -81,14 +81,7 @@ const Ventas = () => {
     fetchClientes();
   }, []);
 
-  // Auto-apply wholesale pricing when count reaches 18+
-  useEffect(() => {
-    if (formData.items.length > 0 || formData.packs.length > 0) {
-      checkAndApplyWholesale();
-      // Also update pack prices when items/packs change
-      updatePackPricesForWholesale();
-    }
-  }, [formData.items, formData.packs]);
+
 
   // Handle navigation state from Clientes page
   useEffect(() => {
@@ -170,38 +163,7 @@ const Ventas = () => {
       
       const total = itemsTotal + packsTotal;
       
-      // Check if wholesale should be applied automatically
-      const totalKombuchaCount = updatedItems.reduce((sum, item) => {
-        return sum + (parseFloat(item.cantidad) || 0);
-      }, 0) + prev.packs.reduce((sum, pack) => {
-        return sum + (pack.kombuchas?.length || 0);
-      }, 0);
-      
-      // Auto-apply wholesale if count reaches 18+ and not manually set
-      if (totalKombuchaCount >= 18 && !prev.isWholesale) {
-        // Update all item prices to wholesale
-        const updatedItemsWithWholesale = updatedItems.map(item => {
-          if (item.kombuchaId) {
-            return { ...item, precio: getWholesalePrice() };
-          }
-          return item;
-        });
-        
-        // Recalculate total with wholesale prices
-        const itemsTotalWholesale = updatedItemsWithWholesale.reduce((sum, item) => {
-          const cantidad = parseFloat(item.cantidad) || 0;
-          const precio = parseFloat(item.precio) || 0;
-          return sum + (cantidad * precio);
-        }, 0);
-        
-        const totalWholesale = itemsTotalWholesale + packsTotal;
-        
-        return {
-          ...prev,
-          items: updatedItemsWithWholesale,
-          total: totalWholesale.toFixed(2)
-        };
-      }
+
       
       return {
         ...prev,
@@ -266,38 +228,7 @@ const Ventas = () => {
       
       const total = itemsTotal + packsTotal;
       
-      // Check if wholesale should still be applied after removal
-      const totalKombuchaCount = prev.items.reduce((sum, item) => {
-        return sum + (parseFloat(item.cantidad) || 0);
-      }, 0) + updatedPacks.reduce((sum, pack) => {
-        return sum + (pack.kombuchas?.length || 0);
-      }, 0);
-      
-      // If count drops below 18 and wholesale was auto-applied, revert to original prices
-      if (totalKombuchaCount < 18 && !prev.isWholesale) {
-        const updatedItemsWithOriginalPrices = prev.items.map(item => {
-          if (item.kombuchaId) {
-            return { ...item, precio: getOriginalPrice(item.kombuchaId) };
-          }
-          return item;
-        });
-        
-        // Recalculate total with original prices
-        const itemsTotalOriginal = updatedItemsWithOriginalPrices.reduce((sum, item) => {
-          const cantidad = parseFloat(item.cantidad) || 0;
-          const precio = parseFloat(item.precio) || 0;
-          return sum + (cantidad * precio);
-        }, 0);
-        
-        const totalOriginal = itemsTotalOriginal + packsTotal;
-        
-        return {
-          ...prev,
-          items: updatedItemsWithOriginalPrices,
-          packs: updatedPacks,
-          total: totalOriginal.toFixed(2)
-        };
-      }
+
       
       return {
         ...prev,
@@ -337,39 +268,7 @@ const Ventas = () => {
       
       const total = itemsTotal + packsTotal;
       
-      // Check if wholesale should be applied automatically
-      const totalKombuchaCount = prev.items.reduce((sum, item) => {
-        return sum + (parseFloat(item.cantidad) || 0);
-      }, 0) + updatedPacks.reduce((sum, pack) => {
-        return sum + (pack.kombuchas?.length || 0);
-      }, 0);
-      
-      // Auto-apply wholesale if count reaches 18+ and not manually set
-      if (totalKombuchaCount >= 18 && !prev.isWholesale) {
-        // Update all item prices to wholesale
-        const updatedItemsWithWholesale = prev.items.map(item => {
-          if (item.kombuchaId) {
-            return { ...item, precio: getWholesalePrice() };
-          }
-          return item;
-        });
-        
-        // Recalculate total with wholesale prices
-        const itemsTotalWholesale = updatedItemsWithWholesale.reduce((sum, item) => {
-          const cantidad = parseFloat(item.cantidad) || 0;
-          const precio = parseFloat(item.precio) || 0;
-          return sum + (cantidad * precio);
-        }, 0);
-        
-        const totalWholesale = itemsTotalWholesale + packsTotal;
-        
-        return {
-          ...prev,
-          items: updatedItemsWithWholesale,
-          packs: updatedPacks,
-          total: totalWholesale.toFixed(2)
-        };
-      }
+
       
       return {
         ...prev,
@@ -383,9 +282,6 @@ const Ventas = () => {
   const removeItem = (index) => {
     setFormData(prev => {
       const updatedItems = prev.items.filter((_, i) => i !== index);
-      if (updatedItems.length === 0) {
-        updatedItems.push({ kombuchaId: '', cantidad: 1, precio: '' });
-      }
       
       // Recalculate total
       const itemsTotal = updatedItems.reduce((sum, item) => {
@@ -400,38 +296,6 @@ const Ventas = () => {
       }, 0);
       
       const total = itemsTotal + packsTotal;
-      
-      // Check if wholesale should still be applied after removal
-      const totalKombuchaCount = updatedItems.reduce((sum, item) => {
-        return sum + (parseFloat(item.cantidad) || 0);
-      }, 0) + prev.packs.reduce((sum, pack) => {
-        return sum + (pack.kombuchas?.length || 0);
-      }, 0);
-      
-      // If count drops below 18 and wholesale was auto-applied, revert to original prices
-      if (totalKombuchaCount < 18 && !prev.isWholesale) {
-        const updatedItemsWithOriginalPrices = updatedItems.map(item => {
-          if (item.kombuchaId) {
-            return { ...item, precio: getOriginalPrice(item.kombuchaId) };
-          }
-          return item;
-        });
-        
-        // Recalculate total with original prices
-        const itemsTotalOriginal = updatedItemsWithOriginalPrices.reduce((sum, item) => {
-          const cantidad = parseFloat(item.cantidad) || 0;
-          const precio = parseFloat(item.precio) || 0;
-          return sum + (cantidad * precio);
-        }, 0);
-        
-        const totalOriginal = itemsTotalOriginal + packsTotal;
-        
-        return {
-          ...prev,
-          items: updatedItemsWithOriginalPrices,
-          total: totalOriginal.toFixed(2)
-        };
-      }
       
       return {
         ...prev,
@@ -454,15 +318,15 @@ const Ventas = () => {
             return;
         }
 
-        // Validate items
+        // Validate items and packs
         const validItems = formData.items.filter(item => item.kombuchaId && item.cantidad > 0);
-        if (validItems.length === 0) {
-            setError('Debe agregar al menos un item con kombucha y cantidad');
+        const validPacks = formData.packs.filter(pack => pack.kombuchas && pack.kombuchas.length > 0);
+        
+        // Must have at least one valid item OR one valid pack
+        if (validItems.length === 0 && validPacks.length === 0) {
+            setError('Debe agregar al menos un producto (kombucha individual o pack)');
             return;
         }
-
-        // Validate packs
-        const validPacks = formData.packs.filter(pack => pack.kombuchas && pack.kombuchas.length > 0);
         
         const ventaData = {
             fecha: formData.fecha.trim(),
@@ -511,9 +375,7 @@ const Ventas = () => {
       }];
     }
     
-    if (items.length === 0) {
-      items = [{ kombuchaId: '', cantidad: 1, precio: 0 }];
-    }
+    // Don't add empty items if there are packs - allow packs-only sales
     
     // Calculate items total
     const itemsTotal = items.reduce((sum, item) => {
@@ -568,7 +430,7 @@ const Ventas = () => {
     setFormData({
         fecha: getMexicoDate(), // Today's date
         cliente: '',
-        items: [{ kombuchaId: '', cantidad: 1, precio: '' }],
+        items: [],
         packs: [],
         total: '0.00',
         estado: 'pendiente',
@@ -609,13 +471,10 @@ const Ventas = () => {
 
   // Check if wholesale pricing should be applied
   const shouldApplyWholesale = () => {
-    return formData.isWholesale || getTotalKombuchaCount() >= 18;
+    return formData.isWholesale;
   };
 
-  // Check if wholesale is applied automatically (not manually checked)
-  const isWholesaleAutoApplied = () => {
-    return !formData.isWholesale && getTotalKombuchaCount() >= 18;
-  };
+
 
   // Get wholesale price ($36)
   const getWholesalePrice = () => 36.00;
@@ -785,45 +644,9 @@ const Ventas = () => {
     return totalSavings;
   };
 
-  // Check if wholesale should be applied and apply it automatically
-  const checkAndApplyWholesale = () => {
-    const totalCount = getTotalKombuchaCount();
-    if (totalCount >= 18 && !formData.isWholesale) {
-      // Auto-apply wholesale pricing
-      applyWholesaleToAllItems();
-    }
-  };
 
-  // Update pack prices when wholesale status changes
-  const updatePackPricesForWholesale = () => {
-    setFormData(prev => {
-      const updatedPacks = prev.packs.map(pack => {
-        if (pack.kombuchas && pack.kombuchas.length > 0) {
-          return { ...pack, precio: calculatePackPrice(pack.kombuchas) };
-        }
-        return pack;
-      });
 
-      // Recalculate total with updated pack prices
-      const itemsTotal = prev.items.reduce((sum, item) => {
-        const cantidad = parseFloat(item.cantidad) || 0;
-        const precio = parseFloat(item.precio) || 0;
-        return sum + (cantidad * precio);
-      }, 0);
-      
-      const packsTotal = updatedPacks.reduce((sum, pack) => {
-        return sum + pack.precio;
-      }, 0);
-      
-      const total = itemsTotal + packsTotal;
 
-      return {
-        ...prev,
-        packs: updatedPacks,
-        total: total.toFixed(2)
-      };
-    });
-  };
 
   // Force update pack prices to original (for debugging and manual reset)
   const forceUpdatePackPricesToOriginal = () => {
@@ -868,48 +691,7 @@ const Ventas = () => {
     });
   };
 
-  // Recalculate all prices based on wholesale status
-  const recalculatePricesForWholesale = () => {
-    setFormData(prev => {
-      const updatedItems = prev.items.map(item => {
-        if (item.kombuchaId) {
-          return {
-            ...item,
-            precio: getSuggestedPrice(item.kombuchaId)
-          };
-        }
-        return item;
-      });
 
-      // Update pack prices with current wholesale status
-      const updatedPacks = prev.packs.map(pack => {
-        if (pack.kombuchas && pack.kombuchas.length > 0) {
-          return { ...pack, precio: calculatePackPrice(pack.kombuchas) };
-        }
-        return pack;
-      });
-
-      // Recalculate total
-      const itemsTotal = updatedItems.reduce((sum, item) => {
-        const cantidad = parseFloat(item.cantidad) || 0;
-        const precio = parseFloat(item.precio) || 0;
-        return sum + (cantidad * precio);
-      }, 0);
-      
-      const packsTotal = updatedPacks.reduce((sum, pack) => {
-        return sum + pack.precio;
-      }, 0);
-      
-      const total = itemsTotal + packsTotal;
-
-      return {
-        ...prev,
-        items: updatedItems,
-        packs: updatedPacks,
-        total: total.toFixed(2)
-      };
-    });
-  };
 
   // Check if price has been modified
   const isPriceModified = (item) => {
@@ -1620,14 +1402,10 @@ const Ventas = () => {
                                     <span style={{ color: '#90ee90', fontWeight: 'bold' }}>
                                         ✓ Aplicando precio mayorista ($36 por kombucha)
                                     </span>
-                                ) : isWholesaleAutoApplied() ? (
-                                    <span style={{ color: '#90ee90', fontWeight: 'bold' }}>
-                                        ✓ Aplicando automáticamente (18+ kombuchas = $36 c/u)
-                                    </span>
                                 ) : (
-                                    <span>
-                                        Se aplica automáticamente con 18+ kombuchas o selección manual
-                                    </span>
+                                                                    <span>
+                                    Selección manual del precio mayorista
+                                </span>
                                 )}
                             </div>
                             {getTotalKombuchaCount() > 0 && (
@@ -1639,11 +1417,7 @@ const Ventas = () => {
                                 }}>
                                     <span>
                                         Total de kombuchas: {getTotalKombuchaCount()} 
-                                        {isWholesaleAutoApplied() && (
-                                            <span style={{ color: '#90ee90', fontWeight: 'bold' }}>
-                                                {' '}• Aplicando mayorista automáticamente
-                                            </span>
-                                        )}
+
                                     </span>
                                     {getTotalKombuchaCount() > 0 && (
                                         <div style={{ marginTop: '0.5rem', fontSize: '0.75rem' }}>
@@ -1700,7 +1474,7 @@ const Ventas = () => {
                         </div>
                         
                         <div className="form-group">
-                            <label>Productos de la Venta *</label>
+                            <label>Productos de la Venta {formData.packs.length === 0 ? '*' : '(Opcional si hay packs)'}</label>
                             
                             {/* Pricing Summary */}
                             {getTotalKombuchaCount() > 0 && (
@@ -1769,7 +1543,40 @@ const Ventas = () => {
                                 </button>
                             </div>
                             
+                            {/* Message when no individual items */}
+                            {formData.items.length === 0 && formData.packs.length > 0 && (
+                                <div style={{ 
+                                    marginBottom: '1rem',
+                                    padding: '1rem',
+                                    backgroundColor: 'rgba(56, 161, 105, 0.1)',
+                                    border: '1px solid #38a169',
+                                    borderRadius: '8px',
+                                    textAlign: 'center',
+                                    fontSize: '0.9rem'
+                                }}>
+                                    <span style={{ color: '#38a169', fontWeight: '600' }}>
+                                        ✓ Solo vendiendo packs - No se requieren productos individuales
+                                    </span>
+                                </div>
+                            )}
+                            
                             {/* Individual Items */}
+                            {formData.items.length === 0 && formData.packs.length === 0 && (
+                                <div style={{ 
+                                    marginBottom: '1rem',
+                                    padding: '1rem',
+                                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                                    border: '1px solid #667eea',
+                                    borderRadius: '8px',
+                                    textAlign: 'center',
+                                    fontSize: '0.9rem'
+                                }}>
+                                    <span style={{ color: '#667eea', fontWeight: '600' }}>
+                                        Agrega productos individuales o packs para comenzar la venta
+                                    </span>
+                                </div>
+                            )}
+                            
                             {formData.items.map((item, index) => (
                                 <div key={index} style={{ 
                                     border: '1px solid #667eea', 
@@ -1781,7 +1588,7 @@ const Ventas = () => {
                                 }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                                         <h4 style={{ color: 'white', margin: 0 }}>Producto {index + 1}</h4>
-                                        {formData.items.length > 1 && (
+                                        {(formData.items.length > 1 || formData.packs.length > 0) && (
                                             <button 
                                                 type="button" 
                                                 onClick={() => removeItem(index)}
@@ -1803,7 +1610,7 @@ const Ventas = () => {
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
                                         <div>
                                             <label style={{ color: 'white', fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>
-                                                Kombucha *
+                                                Kombucha {formData.packs.length === 0 ? '*' : '(Opcional)'}
                                             </label>
                                             <select
                                                 value={item.kombuchaId}
@@ -1816,7 +1623,7 @@ const Ventas = () => {
                                                     backgroundColor: 'white',
                                                     color: '#2d3748'
                                                 }}
-                                                required
+                                                required={formData.packs.length === 0}
                                             >
                                                 <option value="">Selecciona una kombucha</option>
                                                 {kombuchas.map(kombucha => (
@@ -1829,7 +1636,7 @@ const Ventas = () => {
                                         
                                         <div>
                                             <label style={{ color: 'white', fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>
-                                                Cantidad *
+                                                Cantidad {formData.packs.length === 0 ? '*' : '(Opcional)'}
                                             </label>
                                             <input
                                                 type="number"
@@ -1844,13 +1651,13 @@ const Ventas = () => {
                                                     backgroundColor: 'white',
                                                     color: '#2d3748'
                                                 }}
-                                                required
+                                                required={formData.packs.length === 0}
                                             />
                                         </div>
                                         
                                         <div>
                                             <label style={{ color: 'white', fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>
-                                                Precio *
+                                                Precio {formData.packs.length === 0 ? '*' : '(Opcional)'}
                                             </label>
                                             <input
                                                 type="number"
@@ -1867,6 +1674,7 @@ const Ventas = () => {
                                                     color: '#4a5568'
                                                 }}
                                                 placeholder="0.00"
+                                                required={formData.packs.length === 0}
                                             />
                                             <small style={{ color: 'white', fontSize: '0.7rem' }}>
                                                 {item.kombuchaId && getOriginalPrice(item.kombuchaId) ? (
@@ -2201,7 +2009,7 @@ const Ventas = () => {
                                                                 <div>
                                                                     <br />
                                                                     <small style={{ fontSize: '0.7rem', color: '#90ee90' }}>
-                                                                        Con 18+ kombuchas: ${(getWholesalePrice() * 6).toFixed(2)}
+                                                                        Con precio mayorista: ${(getWholesalePrice() * 6).toFixed(2)}
                                                                     </small>
                                                                 </div>
                                                             )}
