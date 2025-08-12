@@ -13,8 +13,6 @@ const AddressAutocomplete = ({
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [inputValue, setInputValue] = useState(value || '');
-  const [isLoading, setIsLoading] = useState(false);
-  const [searchTimeout, setSearchTimeout] = useState(null);
   const autocompleteService = useRef(null);
   const placesService = useRef(null);
 
@@ -39,120 +37,58 @@ const AddressAutocomplete = ({
     setInputValue(value || '');
   }, [value]);
 
-  const getAddressSuggestions = (input) => {
-    if (!autocompleteService.current || input.length < 2) {
-      setSuggestions([]);
-      setShowSuggestions(false);
-      return;
-    }
-
-    setIsLoading(true);
-
-    // Create multiple search requests with different strategies
-    const searchRequests = [
-      // Full address search
-      {
-        input: input,
-        componentRestrictions: { country: 'mx' },
-        types: ['address']
-      },
-      // Street search (more flexible)
-      {
-        input: input,
-        componentRestrictions: { country: 'mx' },
-        types: ['geocode']
-      },
-      // Establishments search (for landmarks, businesses)
-      {
-        input: input,
-        componentRestrictions: { country: 'mx' },
-        types: ['establishment']
-      }
-    ];
-
-    // Execute all search requests
-    const allPromises = searchRequests.map(request => {
-      return new Promise((resolve) => {
-        autocompleteService.current.getPlacePredictions(request, (predictions, status) => {
-          if (status === window.google.maps.places.PlacesServiceStatus.OK) {
-            resolve(predictions || []);
-          } else {
-            resolve([]);
-          }
-        });
-      });
-    });
-
-    Promise.all(allPromises).then((results) => {
-      // Combine and deduplicate results
-      const allPredictions = results.flat();
-      const uniquePredictions = allPredictions.filter((prediction, index, self) => 
-        index === self.findIndex(p => p.place_id === prediction.place_id)
-      );
-
-      // Filter predictions based on restricted cities/states
-      let filteredPredictions = uniquePredictions;
-      
-      if (restrictedCities.length > 0 || restrictedStates.length > 0) {
-        filteredPredictions = uniquePredictions.filter(prediction => {
-          const secondaryText = prediction.structured_formatting.secondary_text || '';
-          const fullDescription = prediction.description || '';
-          
-          // Check if any restricted city is in the prediction
-          const hasRestrictedCity = restrictedCities.length === 0 || 
-            restrictedCities.some(city => 
-              secondaryText.toLowerCase().includes(city.toLowerCase()) ||
-              fullDescription.toLowerCase().includes(city.toLowerCase())
-            );
-          
-          // Check if any restricted state is in the prediction
-          const hasRestrictedState = restrictedStates.length === 0 ||
-            restrictedStates.some(state => 
-              secondaryText.toLowerCase().includes(state.toLowerCase()) ||
-              fullDescription.toLowerCase().includes(state.toLowerCase())
-            );
-          
-          return hasRestrictedCity && hasRestrictedState;
-        });
-      }
-
-      // Sort predictions by relevance (exact matches first, then partial matches)
-      filteredPredictions.sort((a, b) => {
-        const aMainText = a.structured_formatting.main_text.toLowerCase();
-        const bMainText = b.structured_formatting.main_text.toLowerCase();
-        const inputLower = input.toLowerCase();
-        
-        const aExactMatch = aMainText.startsWith(inputLower);
-        const bExactMatch = bMainText.startsWith(inputLower);
-        
-        if (aExactMatch && !bExactMatch) return -1;
-        if (!aExactMatch && bExactMatch) return 1;
-        
-        return aMainText.localeCompare(bMainText);
-      });
-
-      setSuggestions(filteredPredictions);
-      setShowSuggestions(filteredPredictions.length > 0);
-      setIsLoading(false);
-    });
-  };
-
   const handleInputChange = (e) => {
     const newValue = e.target.value;
     setInputValue(newValue);
     onChange({ address: newValue, coordinates: null });
 
-    // Clear previous timeout
-    if (searchTimeout) {
-      clearTimeout(searchTimeout);
+    if (newValue.length > 2 && autocompleteService.current) {
+      autocompleteService.current.getPlacePredictions(
+        {
+          input: newValue,
+          componentRestrictions: { country: 'mx' }, // Restrict to Mexico
+          types: ['address']
+        },
+        (predictions, status) => {
+          if (status === window.google.maps.places.PlacesServiceStatus.OK) {
+            // Filter predictions based on restricted cities/states
+            let filteredPredictions = predictions;
+            
+            if (restrictedCities.length > 0 || restrictedStates.length > 0) {
+              filteredPredictions = predictions.filter(prediction => {
+                const secondaryText = prediction.structured_formatting.secondary_text || '';
+                const fullDescription = prediction.description || '';
+                
+                // Check if any restricted city is in the prediction
+                const hasRestrictedCity = restrictedCities.length === 0 || 
+                  restrictedCities.some(city => 
+                    secondaryText.toLowerCase().includes(city.toLowerCase()) ||
+                    fullDescription.toLowerCase().includes(city.toLowerCase())
+                  );
+                
+                // Check if any restricted state is in the prediction
+                const hasRestrictedState = restrictedStates.length === 0 ||
+                  restrictedStates.some(state => 
+                    secondaryText.toLowerCase().includes(state.toLowerCase()) ||
+                    fullDescription.toLowerCase().includes(state.toLowerCase())
+                  );
+                
+                return hasRestrictedCity && hasRestrictedState;
+              });
+            }
+            
+            setSuggestions(filteredPredictions);
+            setShowSuggestions(filteredPredictions.length > 0);
+          } else {
+            setSuggestions([]);
+            setShowSuggestions(false);
+          }
+        }
+      );
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
     }
-
-    // Debounce the search to avoid too many API calls
-    const timeout = setTimeout(() => {
-      getAddressSuggestions(newValue);
-    }, 300);
-
-    setSearchTimeout(timeout);
   };
 
   const handleSuggestionClick = (suggestion) => {
@@ -197,33 +133,18 @@ const AddressAutocomplete = ({
     }
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && suggestions.length > 0) {
-      e.preventDefault();
-      handleSuggestionClick(suggestions[0]);
-    }
-  };
-
   return (
     <div className={`address-autocomplete ${className}`}>
-      <div className="input-container">
-        <input
-          type="text"
-          value={inputValue}
-          onChange={handleInputChange}
-          onBlur={handleInputBlur}
-          onFocus={handleInputFocus}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          className="address-input"
-          autoComplete="off"
-        />
-        {isLoading && (
-          <div className="loading-indicator">
-            <div className="spinner"></div>
-          </div>
-        )}
-      </div>
+      <input
+        type="text"
+        value={inputValue}
+        onChange={handleInputChange}
+        onBlur={handleInputBlur}
+        onFocus={handleInputFocus}
+        placeholder={placeholder}
+        className="address-input"
+        autoComplete="off"
+      />
       {showSuggestions && suggestions.length > 0 && (
         <div className="suggestions-container">
           {suggestions.map((suggestion, index) => (
@@ -237,12 +158,6 @@ const AddressAutocomplete = ({
               <div className="suggestion-secondary-text">{suggestion.structured_formatting.secondary_text}</div>
             </div>
           ))}
-        </div>
-      )}
-      {showSuggestions && suggestions.length === 0 && !isLoading && inputValue.length > 2 && (
-        <div className="no-suggestions">
-          <div className="no-suggestions-text">No se encontraron direcciones</div>
-          <div className="no-suggestions-hint">Intenta con términos más específicos</div>
         </div>
       )}
     </div>
