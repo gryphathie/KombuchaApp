@@ -654,6 +654,93 @@
   font-weight: 500;
 }
 
+/* Unassigned Clients Section */
+.unassigned-clients-section {
+  margin-top: 2rem;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.unassigned-clients-section h2 {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  color: white;
+  margin: 0;
+  padding: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.unassigned-clients-list {
+  padding: 1.5rem;
+}
+
+.unassigned-client-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  background: #f8fafc;
+  transition: all 0.3s ease;
+}
+
+.unassigned-client-item:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.unassigned-client-item:last-child {
+  margin-bottom: 0;
+}
+
+.unassigned-client-item .cliente-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.unassigned-client-item .cliente-info strong {
+  color: #2d3748;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.unassigned-client-item .cliente-info span {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.add-to-route-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.add-to-route-btn:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.no-unassigned-clients {
+  padding: 2rem;
+  text-align: center;
+  color: #64748b;
+  font-style: italic;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .ruta-page {
@@ -717,6 +804,22 @@
   .cancel-btn, .save-btn {
     width: 100%;
   }
+  
+  .unassigned-client-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .unassigned-client-item .cliente-info {
+    align-items: center;
+  }
+  
+  .add-to-route-btn {
+    width: 100%;
+    padding: 0.75rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -739,5 +842,18 @@
   .form-group textarea {
     padding: 0.5rem;
     font-size: 0.9rem;
+  }
+  
+  .unassigned-clients-section h2 {
+    padding: 1rem;
+    font-size: 1.3rem;
+  }
+  
+  .unassigned-clients-list {
+    padding: 1rem;
+  }
+  
+  .unassigned-client-item {
+    padding: 0.75rem;
   }
 } 

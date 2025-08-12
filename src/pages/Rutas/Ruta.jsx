@@ -227,6 +227,28 @@ const Ruta = () => {
     return cliente ? cliente.direccion : 'Dirección no encontrada';
   };
 
+  // Get unassigned clients (clients not in any route)
+  const getUnassignedClientes = () => {
+    const assignedClienteIds = new Set();
+    rutas.forEach(ruta => {
+      if (ruta.clientes) {
+        ruta.clientes.forEach(clienteId => assignedClienteIds.add(clienteId));
+      }
+    });
+    
+    return clientes.filter(cliente => !assignedClienteIds.has(cliente.id));
+  };
+
+  // Handle adding unassigned client to new route
+  const handleAddUnassignedToRoute = (cliente) => {
+    setSelectedClientes([cliente.id]);
+    setFormData(prev => ({
+      ...prev,
+      nombre: `Ruta para ${cliente.nombre}`
+    }));
+    setShowForm(true);
+  };
+
   // Sort routes
   const sortedRutas = [...rutas].sort((a, b) => {
     let aValue = a[sortField] || '';
@@ -500,6 +522,32 @@ const Ruta = () => {
         {sortedRutas.length === 0 && (
           <div className="empty-state">
             <p>No hay rutas creadas. Crea tu primera ruta para comenzar.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Unassigned Clients Section */}
+      <div className="unassigned-clients-section">
+        <h2>Clientes No Asignados</h2>
+        <div className="unassigned-clients-list">
+          {getUnassignedClientes().map(cliente => (
+            <div key={cliente.id} className="unassigned-client-item">
+              <div className="cliente-info">
+                <strong>{cliente.nombre}</strong>
+                <span>{cliente.direccion}</span>
+              </div>
+              {/* <button 
+                className="add-to-route-btn"
+                onClick={() => handleAddUnassignedToRoute(cliente)}
+              >
+                Asignar a Ruta
+              </button> */}
+            </div>
+          ))}
+        </div>
+        {getUnassignedClientes().length === 0 && (
+          <div className="no-unassigned-clients">
+            <p>Todos los clientes están asignados a una ruta.</p>
           </div>
         )}
       </div>
